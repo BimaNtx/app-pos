@@ -122,8 +122,8 @@
     {{-- Add/Edit Modal --}}
     @if($showModal)
     <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50" wire:click.self="closeModal">
-        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg animate-bounce-in">
-            <div class="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg animate-bounce-in max-h-[90vh] flex flex-col">
+            <div class="px-6 py-4 border-b border-gray-100 flex items-center justify-between flex-shrink-0">
                 <h3 class="text-lg font-bold text-gray-800">
                     {{ $editingId ? 'Edit Product' : 'Add New Product' }}
                 </h3>
@@ -133,7 +133,7 @@
                     </svg>
                 </button>
             </div>
-            <form wire:submit="save" class="p-6 space-y-4">
+            <form wire:submit="save" class="p-6 space-y-4 overflow-y-auto flex-1">
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Product Name *</label>
                     <input type="text" wire:model="name" class="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-teal-500 focus:border-transparent">
@@ -156,9 +156,75 @@
                     </div>
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Image URL</label>
-                    <input type="url" wire:model="image_url" placeholder="https://..." class="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-teal-500 focus:border-transparent">
-                    @error('image_url') <span class="text-red-500 text-xs mt-1">{{ $message }}</span> @enderror
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Product Image</label>
+                    
+                    {{-- Image Preview Area --}}
+                    @if($image)
+                        {{-- Preview of newly uploaded image --}}
+                        <div class="mb-3 flex items-start gap-3">
+                            <div class="relative flex-shrink-0">
+                                <img src="{{ $image->temporaryUrl() }}" 
+                                     alt="New image preview" 
+                                     class="w-20 h-20 rounded-xl object-cover border-2 border-teal-500 shadow-md"
+                                     style="max-width: 80px; max-height: 80px; min-width: 80px; min-height: 80px;">
+                                <button type="button" wire:click="$set('image', null)" 
+                                        class="absolute -top-2 -right-2 w-6 h-6 bg-red-500 hover:bg-red-600 text-white rounded-full flex items-center justify-center shadow-md transition-colors">
+                                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                                    </svg>
+                                </button>
+                            </div>
+                            <div class="flex flex-col justify-center">
+                                <p class="text-xs text-teal-600 font-medium">New image selected</p>
+                                <p class="text-xs text-gray-400">Ready to upload</p>
+                            </div>
+                        </div>
+                    @elseif($editingId && $existing_image_url)
+                        {{-- Preview of existing image (Edit mode) --}}
+                        <div class="mb-3 flex items-start gap-3">
+                            <div class="relative flex-shrink-0">
+                                <img src="{{ $existing_image_url }}" 
+                                     alt="Current product image" 
+                                     class="w-20 h-20 rounded-xl object-cover border border-gray-200 shadow-sm"
+                                     style="max-width: 80px; max-height: 80px; min-width: 80px; min-height: 80px;">
+                            </div>
+                            <div class="flex flex-col justify-center">
+                                <p class="text-xs text-gray-600 font-medium">Current image</p>
+                                <p class="text-xs text-gray-400">Select a new file to replace</p>
+                            </div>
+                        </div>
+                    @endif
+
+                    {{-- File Upload Input --}}
+                    <div class="relative">
+                        <input type="file" 
+                               wire:model="image" 
+                               accept="image/*"
+                               id="image-upload"
+                               class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10">
+                        <div class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl flex items-center justify-center gap-2 hover:bg-gray-100 transition-colors cursor-pointer">
+                            <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                            </svg>
+                            <span class="text-sm text-gray-600">
+                                {{ $editingId && $existing_image_url ? 'Change Image' : 'Choose Image' }}
+                            </span>
+                        </div>
+                    </div>
+                    
+                    {{-- Loading indicator --}}
+                    <div wire:loading wire:target="image" class="mt-2">
+                        <div class="flex items-center gap-2 text-teal-600 text-sm">
+                            <svg class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
+                            <span>Uploading...</span>
+                        </div>
+                    </div>
+                    
+                    @error('image') <span class="text-red-500 text-xs mt-1 block">{{ $message }}</span> @enderror
+                    <p class="text-xs text-gray-400 mt-1">Max size: 2MB. Supported: JPG, PNG, GIF, WebP</p>
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Description</label>
@@ -201,3 +267,32 @@
     </div>
     @endif
 </div>
+
+@push('scripts')
+<script>
+    document.addEventListener('livewire:init', () => {
+        Livewire.on('product-saved', (data) => {
+            const params = data[0];
+            const isCreated = params.type === 'created';
+            
+            Swal.fire({
+                icon: 'success',
+                title: 'Berhasil!',
+                text: isCreated 
+                    ? `Menu baru "${params.name}" telah ditambahkan.`
+                    : `Menu "${params.name}" telah diperbarui.`,
+                confirmButtonText: 'OK',
+                confirmButtonColor: '#0d9488',
+                timer: 3000,
+                timerProgressBar: true,
+                showClass: {
+                    popup: 'animate__animated animate__fadeInDown animate__faster'
+                },
+                hideClass: {
+                    popup: 'animate__animated animate__fadeOutUp animate__faster'
+                }
+            });
+        });
+    });
+</script>
+@endpush

@@ -6,12 +6,14 @@ use App\Models\Product;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Rule;
 use Livewire\Component;
+use Livewire\WithFileUploads;
 use Livewire\WithPagination;
 
 #[Layout('layouts.app')]
 class Products extends Component
 {
     use WithPagination;
+    use WithFileUploads;
 
     public string $search = '';
     public string $categoryFilter = 'all';
@@ -32,8 +34,11 @@ class Products extends Component
     #[Rule('required|numeric|min:0')]
     public $price = '';
     
-    #[Rule('nullable|url')]
-    public string $image_url = '';
+    // Image upload (new file) and existing image URL (for edit mode)
+    #[Rule('nullable|image|max:2048')]
+    public $image = null;
+    
+    public ?string $existing_image_url = null;
     
     #[Rule('nullable|max:500')]
     public string $description = '';
@@ -51,6 +56,7 @@ class Products extends Component
     public function openModal(?int $id = null): void
     {
         $this->resetValidation();
+        $this->image = null;
         
         if ($id) {
             $product = Product::find($id);
@@ -59,7 +65,7 @@ class Products extends Component
                 $this->name = $product->name;
                 $this->category = $product->category;
                 $this->price = $product->price;
-                $this->image_url = $product->image_url ?? '';
+                $this->existing_image_url = $product->image_url;
                 $this->description = $product->description ?? '';
             }
         } else {
@@ -67,7 +73,7 @@ class Products extends Component
             $this->name = '';
             $this->category = 'food';
             $this->price = '';
-            $this->image_url = '';
+            $this->existing_image_url = null;
             $this->description = '';
         }
         
@@ -84,13 +90,23 @@ class Products extends Component
     {
         $this->validate();
 
+        // Handle image upload
+        $imageUrl = $this->existing_image_url;
+        if ($this->image) {
+            $path = $this->image->store('products', 'public');
+            $imageUrl = asset('storage/' . $path);
+        }
+
         $data = [
             'name' => $this->name,
             'category' => $this->category,
             'price' => $this->price,
-            'image_url' => $this->image_url ?: null,
+            'image_url' => $imageUrl,
             'description' => $this->description ?: null,
         ];
+
+        $isEditing = (bool) $this->editingId;
+        $productName = $this->name;
 
         if ($this->editingId) {
             Product::find($this->editingId)->update($data);
@@ -99,6 +115,12 @@ class Products extends Component
         }
 
         $this->closeModal();
+
+        // Dispatch event for success notification
+        $this->dispatch('product-saved', [
+            'type' => $isEditing ? 'updated' : 'created',
+            'name' => $productName,
+        ]);
     }
 
     public function confirmDelete(int $id): void
