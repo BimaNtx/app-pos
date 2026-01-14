@@ -14,3 +14,4 @@ Route::get('/products', Products::class)->name('products');
 Route::get('/transactions', Transactions::class)->name('transactions');
 Route::get('/reports', Reports::class)->name('reports');
 Route::get('/settings', Settings::class)->name('settings');
+Route::get('/logistics', \App\Livewire\Logistics::class)->name('logistics');
