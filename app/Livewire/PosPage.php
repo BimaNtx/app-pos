@@ -8,6 +8,7 @@ use App\Models\TransactionDetail;
 use Illuminate\Support\Facades\DB;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Layout;
+use Livewire\Attributes\Rule;
 use Livewire\Component;
 
 #[Layout('layouts.app')]
@@ -19,7 +20,11 @@ class PosPage extends Component
     
     // Order Info
     public string $orderType = 'dine_in';
+    
+    #[Rule('required_if:orderType,dine_in', message: 'Table number is required for dine-in orders.')]
     public string $tableNumber = '';
+    
+    #[Rule('required', message: 'Customer name is required.')]
     public string $customerName = '';
     
     // Cart
@@ -41,7 +46,7 @@ class PosPage extends Component
 
     public function mount(): void
     {
-        // Initialize
+        // Initialize with empty values
     }
 
     #[Computed]
@@ -64,6 +69,8 @@ class PosPage extends Component
         if ($type === 'takeaway') {
             $this->tableNumber = '';
         }
+        // Clear validation errors when switching order type
+        $this->resetValidation();
     }
 
     public function addToCart(int $productId): void
@@ -132,7 +139,27 @@ class PosPage extends Component
     // Payment Modal
     public function openPaymentModal(): void
     {
+        // Validate cart is not empty
         if (empty($this->cart)) return;
+
+        // Validate customer info based on order type
+        $rules = [
+            'customerName' => 'required|min:2',
+        ];
+        
+        $messages = [
+            'customerName.required' => 'Customer name is required.',
+            'customerName.min' => 'Customer name must be at least 2 characters.',
+        ];
+
+        if ($this->orderType === 'dine_in') {
+            $rules['tableNumber'] = 'required';
+            $messages['tableNumber.required'] = 'Table number is required for dine-in orders.';
+        }
+
+        $this->validate($rules, $messages);
+
+        // If validation passes, open payment modal
         $this->paymentMethod = 'cash';
         $this->amountReceived = '';
         $this->showPaymentModal = true;
@@ -197,7 +224,7 @@ class PosPage extends Component
 
         DB::transaction(function () {
             $transaction = Transaction::create([
-                'customer_name' => $this->customerName ?: ($this->orderType === 'takeaway' ? 'Takeaway' : 'Guest'),
+                'customer_name' => $this->customerName,
                 'transaction_code' => Transaction::generateTransactionCode(),
                 'order_type' => $this->orderType,
                 'table_number' => $this->orderType === 'dine_in' ? $this->tableNumber : null,
@@ -233,6 +260,7 @@ class PosPage extends Component
         $this->orderType = 'dine_in';
         $this->showSuccess = false;
         $this->lastTransactionCode = null;
+        $this->resetValidation();
     }
 
     public function render()

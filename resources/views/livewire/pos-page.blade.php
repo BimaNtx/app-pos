@@ -169,27 +169,27 @@
     {{-- Center: Product Catalog --}}
     <div class="flex-1 flex flex-col h-full overflow-hidden">
         {{-- Search & Category Header --}}
-        <div class="bg-white border-b border-gray-200 p-4 lg:p-6 flex-shrink-0">
-            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div class="bg-white border-b border-gray-200 p-4 flex-shrink-0">
+            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                 <div>
-                    <h2 class="text-2xl font-bold text-gray-800">Menu</h2>
-                    <p class="text-gray-500 text-sm">Select items to add to order</p>
+                    <h2 class="text-xl font-bold text-gray-800">Menu</h2>
+                    <p class="text-gray-500 text-xs">Select items to add</p>
                 </div>
                 {{-- Search Bar --}}
-                <div class="relative w-full sm:w-72">
-                    <input type="text" wire:model.live.debounce.300ms="search" placeholder="Search menu..." 
-                           class="w-full pl-10 pr-4 py-2.5 bg-gray-100 border-0 rounded-xl focus:ring-2 focus:ring-teal-500 focus:bg-white transition-all">
-                    <svg class="w-5 h-5 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div class="relative w-full sm:w-64">
+                    <input type="text" wire:model.live.debounce.300ms="search" placeholder="Search..." 
+                           class="w-full pl-9 pr-4 py-2 bg-gray-100 border-0 rounded-lg text-sm focus:ring-2 focus:ring-teal-500 focus:bg-white transition-all">
+                    <svg class="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
                     </svg>
                 </div>
             </div>
 
             {{-- Category Tabs --}}
-            <div class="flex gap-2 mt-4 overflow-x-auto pb-2 scrollbar-hide">
-                @foreach(['all' => 'All Menu', 'food' => '🍚 Food', 'drink' => '🥤 Drink', 'dessert' => '🍰 Dessert'] as $key => $label)
+            <div class="flex gap-2 mt-3 overflow-x-auto pb-1 scrollbar-hide">
+                @foreach(['all' => 'All', 'food' => '🍚 Food', 'drink' => '🥤 Drink', 'dessert' => '🍰 Dessert'] as $key => $label)
                 <button wire:click="setCategory('{{ $key }}')" 
-                        class="px-5 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-all {{ $category === $key ? 'bg-teal-600 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200' }}">
+                        class="px-4 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-all {{ $category === $key ? 'bg-teal-600 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200' }}">
                     {{ $label }}
                 </button>
                 @endforeach
@@ -197,41 +197,41 @@
         </div>
 
         {{-- Product Grid (ONLY SCROLLABLE AREA) --}}
-        <div class="flex-1 overflow-y-auto p-4 lg:p-6">
-            <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-4">
+        <div class="flex-1 overflow-y-auto p-4">
+            <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-3">
                 @forelse($this->products as $product)
                 <div wire:click="addToCart({{ $product->id }})" wire:key="product-{{ $product->id }}"
-                     class="bg-white rounded-2xl shadow-sm hover:shadow-lg transition-all duration-300 overflow-hidden group cursor-pointer">
-                    <div class="relative h-36 overflow-hidden">
-                        <img src="{{ $product->image_url }}" alt="{{ $product->name }}" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300">
-                        <div class="absolute top-3 left-3">
-                            <span class="px-2.5 py-1 bg-white/90 backdrop-blur-sm rounded-full text-xs font-medium capitalize
+                     class="bg-white rounded-xl shadow-sm hover:shadow-md transition-all duration-200 overflow-hidden group cursor-pointer">
+                    <div class="relative h-24 overflow-hidden">
+                        <img src="{{ $product->image_url }}" alt="{{ $product->name }}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200">
+                        <div class="absolute top-1.5 left-1.5">
+                            <span class="px-1.5 py-0.5 bg-white/90 backdrop-blur-sm rounded text-[10px] font-medium capitalize
                                 {{ $product->category === 'food' ? 'text-orange-600' : '' }}
                                 {{ $product->category === 'drink' ? 'text-blue-600' : '' }}
                                 {{ $product->category === 'dessert' ? 'text-pink-600' : '' }}">
-                                {{ $product->category === 'food' ? '🍚' : ($product->category === 'drink' ? '🥤' : '🍰') }} {{ $product->category }}
+                                {{ $product->category === 'food' ? '🍚' : ($product->category === 'drink' ? '🥤' : '🍰') }}
                             </span>
                         </div>
-                        <div class="absolute inset-0 bg-teal-600/0 group-hover:bg-teal-600/20 transition-colors flex items-center justify-center">
-                            <div class="w-12 h-12 bg-white rounded-full flex items-center justify-center shadow-lg opacity-0 group-hover:opacity-100 transform scale-50 group-hover:scale-100 transition-all">
-                                <svg class="w-6 h-6 text-teal-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        {{-- Quick Add Overlay --}}
+                        <div class="absolute inset-0 bg-teal-600/0 group-hover:bg-teal-600/30 transition-colors flex items-center justify-center">
+                            <div class="w-8 h-8 bg-white rounded-full flex items-center justify-center shadow-lg opacity-0 group-hover:opacity-100 transform scale-50 group-hover:scale-100 transition-all">
+                                <svg class="w-4 h-4 text-teal-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
                                 </svg>
                             </div>
                         </div>
                     </div>
-                    <div class="p-4">
-                        <h3 class="font-semibold text-gray-800 mb-1 truncate">{{ $product->name }}</h3>
-                        <p class="text-gray-500 text-xs mb-2 line-clamp-1">{{ $product->description }}</p>
-                        <span class="text-teal-600 font-bold">Rp {{ number_format($product->price, 0, ',', '.') }}</span>
+                    <div class="p-2.5">
+                        <h3 class="font-semibold text-gray-800 text-sm truncate leading-tight">{{ $product->name }}</h3>
+                        <span class="text-teal-600 font-bold text-sm">Rp {{ number_format($product->price, 0, ',', '.') }}</span>
                     </div>
                 </div>
                 @empty
                 <div class="col-span-full flex flex-col items-center justify-center py-12 text-gray-400">
-                    <svg class="w-16 h-16 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg class="w-12 h-12 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
                     </svg>
-                    <p class="text-lg font-medium">No products found</p>
+                    <p class="font-medium">No products found</p>
                 </div>
                 @endforelse
             </div>
@@ -246,13 +246,13 @@
 
     {{-- Right Sidebar: Cart (FIXED HEIGHT, FLEX COLUMN) --}}
     <aside :class="cartOpen ? 'translate-x-0' : 'translate-x-full'" 
-           class="fixed lg:static inset-y-0 right-0 z-50 w-80 lg:w-96 bg-white border-l border-gray-200 lg:translate-x-0 transition-transform duration-300 ease-in-out flex flex-col h-full flex-shrink-0">
+           class="fixed lg:static inset-y-0 right-0 z-50 w-80 lg:w-[340px] bg-white border-l border-gray-200 lg:translate-x-0 transition-transform duration-300 ease-in-out flex flex-col h-full flex-shrink-0">
         
         {{-- Cart Header --}}
-        <div class="p-4 border-b border-gray-100 flex-shrink-0">
-            <div class="flex items-center justify-between mb-3">
-                <h3 class="text-lg font-bold text-gray-800">Current Order</h3>
-                <button x-on:click="cartOpen = false" class="lg:hidden p-2 hover:bg-gray-100 rounded-lg transition-colors">
+        <div class="p-3 border-b border-gray-100 flex-shrink-0">
+            <div class="flex items-center justify-between mb-2">
+                <h3 class="text-base font-bold text-gray-800">Current Order</h3>
+                <button x-on:click="cartOpen = false" class="lg:hidden p-1.5 hover:bg-gray-100 rounded-lg transition-colors">
                     <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
                     </svg>
@@ -260,112 +260,121 @@
             </div>
             
             {{-- Order Type Toggle --}}
-            <div class="flex bg-gray-100 rounded-xl p-1">
+            <div class="flex bg-gray-100 rounded-lg p-0.5">
                 <button wire:click="setOrderType('dine_in')" 
-                        class="flex-1 py-2 px-3 text-sm font-medium rounded-lg transition-all {{ $orderType === 'dine_in' ? 'bg-white text-teal-700 shadow-sm' : 'text-gray-600 hover:text-gray-800' }}">
+                        class="flex-1 py-1.5 px-2 text-xs font-medium rounded-md transition-all {{ $orderType === 'dine_in' ? 'bg-white text-teal-700 shadow-sm' : 'text-gray-600 hover:text-gray-800' }}">
                     🍽️ Dine-in
                 </button>
                 <button wire:click="setOrderType('takeaway')" 
-                        class="flex-1 py-2 px-3 text-sm font-medium rounded-lg transition-all {{ $orderType === 'takeaway' ? 'bg-white text-teal-700 shadow-sm' : 'text-gray-600 hover:text-gray-800' }}">
+                        class="flex-1 py-1.5 px-2 text-xs font-medium rounded-md transition-all {{ $orderType === 'takeaway' ? 'bg-white text-teal-700 shadow-sm' : 'text-gray-600 hover:text-gray-800' }}">
                     🥡 Takeaway
                 </button>
             </div>
         </div>
 
         {{-- Customer Info --}}
-        <div class="px-4 py-3 border-b border-gray-100 flex-shrink-0">
+        <div class="px-3 py-2 border-b border-gray-100 flex-shrink-0">
             @if($orderType === 'dine_in')
-            <div class="grid grid-cols-2 gap-3">
-                <div>
-                    <label class="block text-xs font-medium text-gray-500 mb-1">Table #</label>
-                    <input type="text" wire:model="tableNumber" placeholder="e.g., 12" 
-                           class="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-teal-500 focus:border-transparent">
+            <div class="grid grid-cols-5 gap-2">
+                <div class="col-span-2">
+                    <label class="block text-[10px] font-medium text-gray-500 mb-0.5">Table # <span class="text-red-500">*</span></label>
+                    <input type="number" wire:model.blur="tableNumber" placeholder="No." 
+                           class="w-full px-2 py-1.5 bg-gray-50 border rounded-lg text-sm focus:ring-2 focus:ring-teal-500 focus:border-transparent {{ $errors->has('tableNumber') ? 'border-red-400 bg-red-50' : 'border-gray-200' }}">
+                    @error('tableNumber')
+                    <p class="text-red-500 text-[10px] mt-0.5">{{ $message }}</p>
+                    @enderror
                 </div>
-                <div>
-                    <label class="block text-xs font-medium text-gray-500 mb-1">Customer</label>
-                    <input type="text" wire:model="customerName" placeholder="Name" 
-                           class="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-teal-500 focus:border-transparent">
+                <div class="col-span-3">
+                    <label class="block text-[10px] font-medium text-gray-500 mb-0.5">Customer <span class="text-red-500">*</span></label>
+                    <input type="text" wire:model.blur="customerName" placeholder="Name" 
+                           class="w-full px-2 py-1.5 bg-gray-50 border rounded-lg text-sm focus:ring-2 focus:ring-teal-500 focus:border-transparent {{ $errors->has('customerName') ? 'border-red-400 bg-red-50' : 'border-gray-200' }}">
+                    @error('customerName')
+                    <p class="text-red-500 text-[10px] mt-0.5">{{ $message }}</p>
+                    @enderror
                 </div>
             </div>
             @else
             <div>
-                <label class="block text-xs font-medium text-gray-500 mb-1">Customer Name</label>
-                <input type="text" wire:model="customerName" placeholder="Enter name for takeaway order" 
-                       class="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-teal-500 focus:border-transparent">
+                <label class="block text-[10px] font-medium text-gray-500 mb-0.5">Customer Name <span class="text-red-500">*</span></label>
+                <input type="text" wire:model.blur="customerName" placeholder="Enter customer name" 
+                       class="w-full px-2 py-1.5 bg-gray-50 border rounded-lg text-sm focus:ring-2 focus:ring-teal-500 focus:border-transparent {{ $errors->has('customerName') ? 'border-red-400 bg-red-50' : 'border-gray-200' }}">
+                @error('customerName')
+                <p class="text-red-500 text-[10px] mt-0.5">{{ $message }}</p>
+                @enderror
             </div>
             @endif
         </div>
 
         {{-- Cart Items (SCROLLABLE) --}}
-        <div class="flex-1 overflow-y-auto p-4 space-y-2">
+        <div class="flex-1 overflow-y-auto p-3 space-y-2">
             @forelse($cart as $index => $item)
-            <div wire:key="cart-{{ $index }}" class="bg-gray-50 rounded-xl p-3">
-                <div class="flex gap-3">
-                    <img src="{{ $item['image_url'] }}" alt="{{ $item['name'] }}" class="w-14 h-14 rounded-lg object-cover flex-shrink-0">
+            <div wire:key="cart-{{ $index }}" class="bg-gray-50 rounded-lg p-2">
+                <div class="flex gap-2">
+                    <img src="{{ $item['image_url'] }}" alt="{{ $item['name'] }}" class="w-12 h-12 rounded-lg object-cover flex-shrink-0">
                     <div class="flex-1 min-w-0">
-                        <h4 class="font-medium text-gray-800 text-sm truncate">{{ $item['name'] }}</h4>
-                        <p class="text-teal-600 font-semibold text-sm">Rp {{ number_format($item['price'], 0, ',', '.') }}</p>
+                        <h4 class="font-medium text-gray-800 text-xs truncate">{{ $item['name'] }}</h4>
+                        <p class="text-teal-600 font-semibold text-xs">Rp {{ number_format($item['price'], 0, ',', '.') }}</p>
                         @if($item['note'])
-                        <p class="text-orange-600 text-xs mt-0.5 truncate">📝 {{ $item['note'] }}</p>
+                        <p class="text-orange-600 text-[10px] mt-0.5 truncate">📝 {{ $item['note'] }}</p>
                         @endif
                     </div>
-                    <div class="flex flex-col items-end gap-1">
+                    <div class="flex flex-col items-center gap-0.5">
                         <button wire:click="openNoteModal({{ $index }})" class="p-1 text-gray-400 hover:text-teal-600 hover:bg-teal-50 rounded transition-colors" title="Add note">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
                             </svg>
                         </button>
                         <button wire:click="removeFromCart({{ $index }})" class="p-1 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded transition-colors">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
                             </svg>
                         </button>
                     </div>
                 </div>
-                <div class="flex items-center justify-between mt-2 pt-2 border-t border-gray-200/50">
-                    <div class="flex items-center gap-2">
-                        <button wire:click="updateQuantity({{ $index }}, -1)" class="w-7 h-7 bg-white border border-gray-200 rounded-lg flex items-center justify-center text-gray-500 hover:bg-gray-100 transition-colors">
+                <div class="flex items-center justify-between mt-2 pt-1.5 border-t border-gray-200/50">
+                    <div class="flex items-center gap-1.5">
+                        <button wire:click="updateQuantity({{ $index }}, -1)" class="w-6 h-6 bg-white border border-gray-200 rounded flex items-center justify-center text-gray-500 hover:bg-gray-100 transition-colors">
                             <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4"/></svg>
                         </button>
-                        <span class="text-sm font-semibold text-gray-800 w-6 text-center">{{ $item['quantity'] }}</span>
-                        <button wire:click="updateQuantity({{ $index }}, 1)" class="w-7 h-7 bg-teal-600 rounded-lg flex items-center justify-center text-white hover:bg-teal-700 transition-colors">
+                        <span class="text-xs font-semibold text-gray-800 w-5 text-center">{{ $item['quantity'] }}</span>
+                        <button wire:click="updateQuantity({{ $index }}, 1)" class="w-6 h-6 bg-teal-600 rounded flex items-center justify-center text-white hover:bg-teal-700 transition-colors">
                             <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
                         </button>
                     </div>
-                    <span class="font-semibold text-gray-800 text-sm">Rp {{ number_format($item['price'] * $item['quantity'], 0, ',', '.') }}</span>
+                    <span class="font-semibold text-gray-800 text-xs">Rp {{ number_format($item['price'] * $item['quantity'], 0, ',', '.') }}</span>
                 </div>
             </div>
             @empty
             <div class="flex flex-col items-center justify-center py-8 text-gray-400">
-                <svg class="w-12 h-12 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg class="w-10 h-10 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/>
                 </svg>
-                <p class="font-medium">Cart is empty</p>
-                <p class="text-sm">Tap items to add</p>
+                <p class="text-sm font-medium">Cart is empty</p>
+                <p class="text-xs">Tap items to add</p>
             </div>
             @endforelse
         </div>
 
         {{-- Cart Footer (PINNED AT BOTTOM) --}}
-        <div class="border-t border-gray-200 p-4 bg-white shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)] flex-shrink-0">
-            <div class="space-y-1.5 mb-4">
-                <div class="flex justify-between text-sm">
+        <div class="border-t border-gray-200 p-3 bg-white shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)] flex-shrink-0">
+            <div class="space-y-1 mb-3">
+                <div class="flex justify-between text-xs">
                     <span class="text-gray-500">Subtotal</span>
                     <span class="text-gray-800">Rp {{ number_format($this->subtotal, 0, ',', '.') }}</span>
                 </div>
-                <div class="flex justify-between text-sm">
+                <div class="flex justify-between text-xs">
                     <span class="text-gray-500">Tax (10%)</span>
                     <span class="text-gray-800">Rp {{ number_format($this->tax, 0, ',', '.') }}</span>
                 </div>
-                <div class="h-px bg-gray-200 my-2"></div>
+                <div class="h-px bg-gray-200 my-1.5"></div>
                 <div class="flex justify-between items-baseline">
-                    <span class="text-gray-800 font-semibold">Total</span>
-                    <span class="text-teal-600 font-bold text-2xl">Rp {{ number_format($this->total, 0, ',', '.') }}</span>
+                    <span class="text-gray-800 font-semibold text-sm">Total</span>
+                    <span class="text-teal-600 font-bold text-xl">Rp {{ number_format($this->total, 0, ',', '.') }}</span>
                 </div>
             </div>
             <button wire:click="openPaymentModal" 
-                    @if(empty($cart)) disabled @endif
-                    class="w-full py-3.5 bg-gradient-to-r from-teal-600 to-teal-700 hover:from-teal-700 hover:to-teal-800 text-white font-semibold rounded-xl transition-all shadow-lg shadow-teal-600/30 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:from-teal-600 disabled:hover:to-teal-700">
+                    @if(count($cart) === 0) disabled @endif
+                    class="w-full py-3 bg-gradient-to-r from-teal-600 to-teal-700 hover:from-teal-700 hover:to-teal-800 text-white font-semibold rounded-xl transition-all shadow-lg shadow-teal-600/30 flex items-center justify-center gap-2 disabled:from-gray-300 disabled:to-gray-400 disabled:shadow-none disabled:cursor-not-allowed">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"/>
                 </svg>
@@ -385,7 +394,7 @@
                 @if($orderType === 'dine_in' && $tableNumber)
                 <p class="text-sm"><strong>Table:</strong> {{ $tableNumber }}</p>
                 @endif
-                <p class="text-sm"><strong>Customer:</strong> {{ $customerName ?: 'Guest' }}</p>
+                <p class="text-sm"><strong>Customer:</strong> {{ $customerName }}</p>
                 <p class="text-sm"><strong>Date:</strong> {{ now()->format('d M Y, H:i') }}</p>
             </div>
             <table class="w-full text-sm mb-4">
