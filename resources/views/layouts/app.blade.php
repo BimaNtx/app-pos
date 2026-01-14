@@ -109,6 +109,15 @@
                     <span class="font-medium">Menu Management</span>
                 </a>
 
+                {{-- Logistics --}}
+                <a href="{{ route('logistics') }}" 
+                   class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all {{ request()->routeIs('logistics') ? 'bg-white/20 text-white' : 'text-teal-100 hover:bg-white/10 hover:text-white' }}">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>
+                    </svg>
+                    <span class="font-medium">Logistics / Bahan</span>
+                </a>
+
                 {{-- Transaction History --}}
                 <a href="{{ route('transactions') }}" 
                    class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all {{ request()->routeIs('transactions') ? 'bg-white/20 text-white' : 'text-teal-100 hover:bg-white/10 hover:text-white' }}">
