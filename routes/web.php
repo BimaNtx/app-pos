@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AuthController;
 use App\Livewire\Dashboard;
+use App\Livewire\Logistics;
 use App\Livewire\PosPage;
 use App\Livewire\Products;
 use App\Livewire\Reports;
@@ -30,4 +31,5 @@ Route::middleware('auth')->group(function () {
     Route::get('/transactions', Transactions::class)->name('transactions');
     Route::get('/reports', Reports::class)->name('reports');
     Route::get('/settings', Settings::class)->name('settings');
+    Route::get('/logistics', Logistics::class)->name('logistics');
 });
