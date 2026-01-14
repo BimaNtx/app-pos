@@ -1,0 +1,137 @@
+<?php
+
+namespace App\Livewire;
+
+use App\Models\Product;
+use Livewire\Attributes\Layout;
+use Livewire\Attributes\Rule;
+use Livewire\Component;
+use Livewire\WithPagination;
+
+#[Layout('layouts.app')]
+class Products extends Component
+{
+    use WithPagination;
+
+    public string $search = '';
+    public string $categoryFilter = 'all';
+    
+    // Modal state
+    public bool $showModal = false;
+    public bool $showDeleteModal = false;
+    public ?int $editingId = null;
+    public ?int $deletingId = null;
+
+    // Form fields
+    #[Rule('required|min:2')]
+    public string $name = '';
+    
+    #[Rule('required|in:food,drink,dessert')]
+    public string $category = 'food';
+    
+    #[Rule('required|numeric|min:0')]
+    public $price = '';
+    
+    #[Rule('nullable|url')]
+    public string $image_url = '';
+    
+    #[Rule('nullable|max:500')]
+    public string $description = '';
+
+    public function updatingSearch(): void
+    {
+        $this->resetPage();
+    }
+
+    public function updatingCategoryFilter(): void
+    {
+        $this->resetPage();
+    }
+
+    public function openModal(?int $id = null): void
+    {
+        $this->resetValidation();
+        
+        if ($id) {
+            $product = Product::find($id);
+            if ($product) {
+                $this->editingId = $id;
+                $this->name = $product->name;
+                $this->category = $product->category;
+                $this->price = $product->price;
+                $this->image_url = $product->image_url ?? '';
+                $this->description = $product->description ?? '';
+            }
+        } else {
+            $this->editingId = null;
+            $this->name = '';
+            $this->category = 'food';
+            $this->price = '';
+            $this->image_url = '';
+            $this->description = '';
+        }
+        
+        $this->showModal = true;
+    }
+
+    public function closeModal(): void
+    {
+        $this->showModal = false;
+        $this->editingId = null;
+    }
+
+    public function save(): void
+    {
+        $this->validate();
+
+        $data = [
+            'name' => $this->name,
+            'category' => $this->category,
+            'price' => $this->price,
+            'image_url' => $this->image_url ?: null,
+            'description' => $this->description ?: null,
+        ];
+
+        if ($this->editingId) {
+            Product::find($this->editingId)->update($data);
+        } else {
+            Product::create($data);
+        }
+
+        $this->closeModal();
+    }
+
+    public function confirmDelete(int $id): void
+    {
+        $this->deletingId = $id;
+        $this->showDeleteModal = true;
+    }
+
+    public function delete(): void
+    {
+        if ($this->deletingId) {
+            Product::destroy($this->deletingId);
+        }
+        $this->showDeleteModal = false;
+        $this->deletingId = null;
+    }
+
+    public function cancelDelete(): void
+    {
+        $this->showDeleteModal = false;
+        $this->deletingId = null;
+    }
+
+    public function render()
+    {
+        $products = Product::query()
+            ->when($this->search, fn($q) => $q->where('name', 'like', '%' . $this->search . '%'))
+            ->when($this->categoryFilter !== 'all', fn($q) => $q->where('category', $this->categoryFilter))
+            ->orderBy('name')
+            ->paginate(10);
+
+        return view('livewire.products', [
+            'products' => $products,
+        ]);
+    }
+}
