@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Product extends Model
@@ -15,6 +16,7 @@ class Product extends Model
     protected $fillable = [
         'name',
         'category',
+        'category_id',
         'price',
         'image_url',
         'description',
@@ -30,6 +32,14 @@ class Product extends Model
     ];
 
     /**
+     * Get the category for the product.
+     */
+    public function categoryRelation(): BelongsTo
+    {
+        return $this->belongsTo(Category::class, 'category_id');
+    }
+
+    /**
      * Get the transaction details for the product.
      */
     public function transactionDetails(): HasMany
@@ -37,3 +47,4 @@ class Product extends Model
         return $this->hasMany(TransactionDetail::class);
     }
 }
+
