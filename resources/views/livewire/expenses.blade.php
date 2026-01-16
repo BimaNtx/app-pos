@@ -19,25 +19,31 @@
     <div class="p-6">
         {{-- Filters --}}
         <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 mb-6">
-            <div class="flex flex-col md:flex-row gap-4">
+            <div class="flex flex-col md:flex-row md:items-end gap-4">
                 {{-- Search --}}
-                <div class="relative flex-1">
-                    <input type="text" wire:model.live.debounce.300ms="search" placeholder="Cari keterangan..."
-                        class="w-full pl-10 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all">
-                    <svg class="w-5 h-5 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" fill="none"
-                        stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                    </svg>
+                <div class="flex flex-col flex-1 min-w-0">
+                    <label class="text-xs font-medium text-gray-500 mb-1">Pencarian</label>
+                    <div class="relative">
+                        <input type="text" wire:model.live.debounce.300ms="search" placeholder="Cari keterangan..."
+                            class="w-full pl-10 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all">
+                        <svg class="w-5 h-5 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" fill="none"
+                            stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                        </svg>
+                    </div>
                 </div>
                 {{-- Category Filter --}}
-                <select wire:model.live="categoryFilter"
-                    class="px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-teal-500 focus:border-transparent">
-                    <option value="">Semua Kategori</option>
-                    @foreach($categories as $key => $label)
-                        <option value="{{ $key }}">{{ $label }}</option>
-                    @endforeach
-                </select>
+                <div class="flex flex-col">
+                    <label class="text-xs font-medium text-gray-500 mb-1">Kategori</label>
+                    <select wire:model.live="categoryFilter"
+                        class="px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-teal-500 focus:border-transparent">
+                        <option value="">Semua Kategori</option>
+                        @foreach($categories as $key => $label)
+                            <option value="{{ $key }}">{{ $label }}</option>
+                        @endforeach
+                    </select>
+                </div>
                 {{-- Date Range --}}
                 <div class="flex flex-col">
                     <label class="text-xs font-medium text-gray-500 mb-1">Dari Tanggal</label>
@@ -51,7 +57,7 @@
                 </div>
                 @if($search || $categoryFilter || $dateFrom || $dateTo)
                     <button wire:click="clearFilters"
-                        class="px-4 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-600 rounded-xl transition-colors self-end">
+                        class="px-4 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-600 rounded-xl transition-colors">
                         Reset
                     </button>
                 @endif
