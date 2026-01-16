@@ -55,18 +55,18 @@
             </div>
 
             {{-- Best Seller --}}
-            <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
-                <div class="flex items-center justify-between">
-                    <div>
+            <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 overflow-hidden">
+                <div class="flex items-center justify-between gap-3">
+                    <div class="flex-1 min-w-0">
                         <p class="text-gray-500 text-sm font-medium">Terlaris Hari Ini</p>
                         @if($this->bestSeller)
-                            <p class="text-xl font-bold text-gray-800 mt-1 truncate">{{ $this->bestSeller['name'] }}</p>
+                            <p class="text-xl font-bold text-gray-800 mt-1 truncate" title="{{ $this->bestSeller['name'] }}">{{ $this->bestSeller['name'] }}</p>
                             <p class="text-teal-600 font-medium text-sm">{{ $this->bestSeller['qty'] }} terjual</p>
                         @else
                             <p class="text-xl font-bold text-gray-400 mt-1">Belum ada penjualan</p>
                         @endif
                     </div>
-                    <div class="w-14 h-14 bg-orange-100 rounded-2xl flex items-center justify-center">
+                    <div class="w-14 h-14 bg-orange-100 rounded-2xl flex items-center justify-center flex-shrink-0">
                         <svg class="w-7 h-7 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                 d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
