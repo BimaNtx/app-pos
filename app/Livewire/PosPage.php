@@ -2,6 +2,7 @@
 
 namespace App\Livewire;
 
+use App\Models\Category;
 use App\Models\Product;
 use App\Models\Transaction;
 use App\Models\TransactionDetail;
@@ -17,29 +18,29 @@ class PosPage extends Component
     // Search & Filter
     public string $search = '';
     public string $category = 'all';
-    
+
     // Order Info
     public string $orderType = 'dine_in';
-    
+
     #[Rule('required_if:orderType,dine_in', message: 'Table number is required for dine-in orders.')]
     public string $tableNumber = '';
-    
+
     #[Rule('required', message: 'Customer name is required.')]
     public string $customerName = '';
-    
+
     // Cart
     public array $cart = [];
-    
+
     // Note Modal
     public bool $showNoteModal = false;
     public ?int $noteEditIndex = null;
     public string $itemNote = '';
-    
+
     // Payment Modal
     public bool $showPaymentModal = false;
     public string $paymentMethod = 'cash';
     public $amountReceived = '';
-    
+
     // Success State
     public bool $showSuccess = false;
     public ?string $lastTransactionCode = null;
@@ -76,7 +77,8 @@ class PosPage extends Component
     public function addToCart(int $productId): void
     {
         $product = Product::find($productId);
-        if (!$product) return;
+        if (!$product)
+            return;
 
         foreach ($this->cart as $index => $item) {
             if ($item['product_id'] === $productId && empty($item['note'])) {
@@ -97,7 +99,8 @@ class PosPage extends Component
 
     public function updateQuantity(int $index, int $change): void
     {
-        if (!isset($this->cart[$index])) return;
+        if (!isset($this->cart[$index]))
+            return;
 
         $newQty = $this->cart[$index]['quantity'] + $change;
         if ($newQty <= 0) {
@@ -140,13 +143,14 @@ class PosPage extends Component
     public function openPaymentModal(): void
     {
         // Validate cart is not empty
-        if (empty($this->cart)) return;
+        if (empty($this->cart))
+            return;
 
         // Validate customer info based on order type
         $rules = [
             'customerName' => 'required|min:2',
         ];
-        
+
         $messages = [
             'customerName.required' => 'Customer name is required.',
             'customerName.min' => 'Customer name must be at least 2 characters.',
@@ -207,7 +211,8 @@ class PosPage extends Component
     #[Computed]
     public function canPay(): bool
     {
-        if ($this->paymentMethod !== 'cash') return true;
+        if ($this->paymentMethod !== 'cash')
+            return true;
         return (float) ($this->amountReceived ?: 0) >= $this->total;
     }
 
@@ -219,8 +224,10 @@ class PosPage extends Component
 
     public function confirmPayment(): void
     {
-        if (empty($this->cart)) return;
-        if ($this->paymentMethod === 'cash' && !$this->canPay) return;
+        if (empty($this->cart))
+            return;
+        if ($this->paymentMethod === 'cash' && !$this->canPay)
+            return;
 
         DB::transaction(function () {
             $transaction = Transaction::create([
@@ -265,6 +272,10 @@ class PosPage extends Component
 
     public function render()
     {
-        return view('livewire.pos-page');
+        $categories = Category::orderBy('name')->get();
+
+        return view('livewire.pos-page', [
+            'categories' => $categories,
+        ]);
     }
 }
