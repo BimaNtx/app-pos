@@ -224,7 +224,7 @@
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                     d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                             </svg>
-                            <span class="font-medium">Settings</span>
+                            <span class="font-medium">Pengaturan</span>
                         </a>
                     </div>
                 </div>
@@ -243,7 +243,7 @@
                     </div>
                     <form method="POST" action="{{ route('logout') }}">
                         @csrf
-                        <button type="submit" class="p-2 rounded-lg hover:bg-white/10 transition-colors" title="Logout">
+                        <button type="submit" class="p-2 rounded-lg hover:bg-white/10 transition-colors" title="Keluar">
                             <svg class="w-5 h-5 text-teal-300 hover:text-white" fill="none" stroke="currentColor"
                                 viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"

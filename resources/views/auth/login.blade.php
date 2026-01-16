@@ -255,8 +255,8 @@
         <!-- Header with Wave -->
         <div class="header">
             <div class="header-content">
-                <h2>Welcome Back,</h2>
-                <h1>Log In!</h1>
+                <h2>Selamat Datang,</h2>
+                <h1>Masuk!</h1>
             </div>
         </div>
 
@@ -275,10 +275,10 @@
 
                 <!-- Email Input -->
                 <div class="form-group">
-                    <label for="email">Email Address</label>
+                    <label for="email">Alamat Email</label>
                     <div class="input-wrapper">
                         <input type="email" id="email" name="email" value="{{ old('email') }}"
-                            placeholder="Enter your email" required autofocus>
+                            placeholder="Masukkan email Anda" required autofocus>
                         <svg class="input-icon" width="20" height="20" fill="none" stroke="currentColor"
                             viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -289,9 +289,9 @@
 
                 <!-- Password Input -->
                 <div class="form-group">
-                    <label for="password">Password</label>
+                    <label for="password">Kata Sandi</label>
                     <div class="input-wrapper">
-                        <input type="password" id="password" name="password" placeholder="••••••••" required>
+                        <input type="password" id="password" name="password" placeholder="Masukkan kata sandi" required>
                         <svg class="input-icon" width="20" height="20" fill="none" stroke="currentColor"
                             viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -304,13 +304,13 @@
                 <div class="form-options">
                     <label class="remember-me">
                         <input type="checkbox" name="remember" {{ old('remember') ? 'checked' : '' }}>
-                        <span>Remember me</span>
+                        <span>Ingat saya</span>
                     </label>
                 </div>
 
                 <!-- Login Button -->
                 <button type="submit" class="login-btn">
-                    Log in
+                    Masuk
                 </button>
             </form>
         </div>

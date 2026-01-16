@@ -2,6 +2,7 @@
 
 namespace App\Livewire;
 
+use App\Models\Category;
 use App\Models\Product;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Rule;
@@ -17,7 +18,7 @@ class Products extends Component
 
     public string $search = '';
     public string $categoryFilter = 'all';
-    
+
     // Modal state
     public bool $showModal = false;
     public bool $showDeleteModal = false;
@@ -27,19 +28,18 @@ class Products extends Component
     // Form fields
     #[Rule('required|min:2')]
     public string $name = '';
-    
-    #[Rule('required|in:food,drink,dessert')]
-    public string $category = 'food';
-    
+
+    public string $category = '';
+
     #[Rule('required|numeric|min:0')]
     public $price = '';
-    
+
     // Image upload (new file) and existing image URL (for edit mode)
     #[Rule('nullable|image|max:2048')]
     public $image = null;
-    
+
     public ?string $existing_image_url = null;
-    
+
     #[Rule('nullable|max:500')]
     public string $description = '';
 
@@ -57,7 +57,10 @@ class Products extends Component
     {
         $this->resetValidation();
         $this->image = null;
-        
+
+        // Get first category slug as default
+        $defaultCategory = Category::first()?->slug ?? '';
+
         if ($id) {
             $product = Product::find($id);
             if ($product) {
@@ -71,12 +74,12 @@ class Products extends Component
         } else {
             $this->editingId = null;
             $this->name = '';
-            $this->category = 'food';
+            $this->category = $defaultCategory;
             $this->price = '';
             $this->existing_image_url = null;
             $this->description = '';
         }
-        
+
         $this->showModal = true;
     }
 
@@ -88,13 +91,23 @@ class Products extends Component
 
     public function save(): void
     {
-        $this->validate();
+        // Get valid category slugs from database
+        $validCategories = Category::pluck('slug')->implode(',');
 
-        // Handle image upload
+        $this->validate([
+            'name' => 'required|min:2',
+            'category' => 'required|in:' . $validCategories,
+            'price' => 'required|numeric|min:0',
+            'image' => 'nullable|image|max:2048',
+            'description' => 'nullable|max:500',
+        ]);
+
+        // Handle image upload - store relative path only
         $imageUrl = $this->existing_image_url;
         if ($this->image) {
             $path = $this->image->store('products', 'public');
-            $imageUrl = asset('storage/' . $path);
+            // Store only the relative path (e.g., 'products/xxx.jpg')
+            $imageUrl = $path;
         }
 
         $data = [
@@ -152,8 +165,12 @@ class Products extends Component
             ->orderBy('name')
             ->paginate(10);
 
+        // Load categories from database
+        $categories = Category::orderBy('name')->get();
+
         return view('livewire.products', [
             'products' => $products,
+            'categories' => $categories,
         ]);
     }
 }
