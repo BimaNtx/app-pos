@@ -21,6 +21,11 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'phone',
+        'position',
+        'avatar',
+        'is_admin',
+        'is_active',
     ];
 
     /**
@@ -43,6 +48,39 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'is_admin' => 'boolean',
+            'is_active' => 'boolean',
         ];
+    }
+
+    /**
+     * Check if user is an admin.
+     */
+    public function isAdmin(): bool
+    {
+        return $this->is_admin ?? false;
+    }
+
+    /**
+     * Get the avatar URL attribute.
+     */
+    public function getAvatarUrlAttribute(): ?string
+    {
+        return $this->avatar
+            ? asset('storage/' . $this->avatar)
+            : null;
+    }
+
+    /**
+     * Get position label in Indonesian.
+     */
+    public function getPositionLabelAttribute(): string
+    {
+        return match ($this->position) {
+            'admin' => 'Administrator',
+            'kasir' => 'Kasir',
+            'chef' => 'Chef / Dapur',
+            default => ucfirst($this->position),
+        };
     }
 }

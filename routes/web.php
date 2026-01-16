@@ -1,7 +1,10 @@
 <?php
 
 use App\Http\Controllers\AuthController;
+use App\Livewire\Categories;
 use App\Livewire\Dashboard;
+use App\Livewire\Employees;
+use App\Livewire\Expenses;
 use App\Livewire\Logistics;
 use App\Livewire\PosPage;
 use App\Livewire\Products;
@@ -28,8 +31,12 @@ Route::middleware('auth')->group(function () {
     Route::get('/pos', PosPage::class)->name('pos');
     Route::get('/dashboard', Dashboard::class)->name('dashboard');
     Route::get('/products', Products::class)->name('products');
+    Route::get('/categories', Categories::class)->name('categories');
     Route::get('/transactions', Transactions::class)->name('transactions');
     Route::get('/reports', Reports::class)->name('reports');
     Route::get('/settings', Settings::class)->name('settings');
     Route::get('/logistics', Logistics::class)->name('logistics');
+    Route::get('/employees', Employees::class)->name('employees');
+    Route::get('/expenses', Expenses::class)->name('expenses');
 });
+

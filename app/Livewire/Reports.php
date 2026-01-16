@@ -2,6 +2,7 @@
 
 namespace App\Livewire;
 
+use App\Models\Expense;
 use App\Models\Product;
 use App\Models\Transaction;
 use App\Models\TransactionDetail;
@@ -23,7 +24,7 @@ class Reports extends Component
     #[Computed]
     public function dateRange(): array
     {
-        return match($this->period) {
+        return match ($this->period) {
             'today' => [now()->startOfDay(), now()->endOfDay()],
             'week' => [now()->startOfWeek(), now()->endOfWeek()],
             'month' => [now()->startOfMonth(), now()->endOfMonth()],
@@ -49,15 +50,48 @@ class Reports extends Component
     #[Computed]
     public function averageOrder(): float
     {
-        if ($this->totalTransactions === 0) return 0;
+        if ($this->totalTransactions === 0)
+            return 0;
         return $this->totalSales / $this->totalTransactions;
+    }
+
+    #[Computed]
+    public function totalExpenses(): float
+    {
+        [$start, $end] = $this->dateRange;
+        return Expense::whereDate('date', '>=', $start->toDateString())
+            ->whereDate('date', '<=', $end->toDateString())
+            ->sum('amount');
+    }
+
+    #[Computed]
+    public function netProfit(): float
+    {
+        return $this->totalSales - $this->totalExpenses;
+    }
+
+    #[Computed]
+    public function expensesByCategory(): \Illuminate\Support\Collection
+    {
+        [$start, $end] = $this->dateRange;
+
+        return Expense::query()
+            ->whereDate('date', '>=', $start->toDateString())
+            ->whereDate('date', '<=', $end->toDateString())
+            ->select(
+                'category',
+                DB::raw('SUM(amount) as total_amount')
+            )
+            ->groupBy('category')
+            ->orderByDesc('total_amount')
+            ->get();
     }
 
     #[Computed]
     public function topProducts(): \Illuminate\Support\Collection
     {
         [$start, $end] = $this->dateRange;
-        
+
         return TransactionDetail::query()
             ->join('transactions', 'transaction_details.transaction_id', '=', 'transactions.id')
             ->join('products', 'transaction_details.product_id', '=', 'products.id')
@@ -78,7 +112,7 @@ class Reports extends Component
     public function salesByCategory(): \Illuminate\Support\Collection
     {
         [$start, $end] = $this->dateRange;
-        
+
         return TransactionDetail::query()
             ->join('transactions', 'transaction_details.transaction_id', '=', 'transactions.id')
             ->join('products', 'transaction_details.product_id', '=', 'products.id')
@@ -93,6 +127,9 @@ class Reports extends Component
 
     public function render()
     {
-        return view('livewire.reports');
+        return view('livewire.reports', [
+            'categoryLabels' => Expense::CATEGORIES,
+        ]);
     }
 }
+

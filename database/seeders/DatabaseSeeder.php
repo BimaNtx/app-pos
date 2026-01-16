@@ -20,6 +20,9 @@ class DatabaseSeeder extends Seeder
             'name' => 'Admin',
             'email' => 'admin@kasir.app',
             'password' => 'password123',
+            'position' => 'admin',
+            'is_admin' => true,
+            'is_active' => true,
         ]);
 
         $this->call([
