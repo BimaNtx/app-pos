@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
-    <title>{{ config('app.name', 'Kasir App') }} - @yield('title', 'POS')</title>
+    <title>{{ $restaurantName }} - @yield('title', 'POS')</title>
 
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.bunny.net">
@@ -75,7 +75,7 @@
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
                 </svg>
             </button>
-            <h1 class="text-lg font-semibold">Kasir App</h1>
+            <h1 class="text-lg font-semibold">{{ $restaurantName }}</h1>
             <div class="w-10"></div>
         </div>
 
@@ -94,7 +94,7 @@
                     <span class="text-teal-700 font-bold text-lg">K</span>
                 </div>
                 <div>
-                    <h1 class="text-white font-bold">Kasir App</h1>
+                    <h1 class="text-white font-bold">{{ $restaurantName }}</h1>
                     <p class="text-teal-300 text-xs">Restaurant POS</p>
                 </div>
             </div>
