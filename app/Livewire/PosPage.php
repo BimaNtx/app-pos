@@ -7,6 +7,7 @@ use App\Models\Product;
 use App\Models\Transaction;
 use App\Models\TransactionDetail;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\File;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Rule;
@@ -28,6 +29,9 @@ class PosPage extends Component
     #[Rule('required', message: 'Customer name is required.')]
     public string $customerName = '';
 
+    // Tax Settings
+    public float $taxPercentage = 10;
+
     // Cart
     public array $cart = [];
 
@@ -47,7 +51,12 @@ class PosPage extends Component
 
     public function mount(): void
     {
-        // Initialize with empty values
+        // Load tax percentage from settings
+        $settingsPath = storage_path('app/settings.json');
+        if (File::exists($settingsPath)) {
+            $settings = json_decode(File::get($settingsPath), true);
+            $this->taxPercentage = $settings['tax_percentage'] ?? 10;
+        }
     }
 
     #[Computed]
@@ -192,7 +201,7 @@ class PosPage extends Component
     #[Computed]
     public function tax(): float
     {
-        return $this->subtotal * 0.10;
+        return $this->subtotal * ($this->taxPercentage / 100);
     }
 
     #[Computed]

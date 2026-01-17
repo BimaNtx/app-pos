@@ -116,7 +116,10 @@
     @if($reprintTransaction)
         <div id="print-receipt" class="hidden print:block p-8 bg-white">
             <div class="max-w-xs mx-auto text-center">
-                <h1 class="text-2xl font-bold mb-1">Kasir App</h1>
+                <h1 class="text-2xl font-bold mb-1">{{ $restaurantName }}</h1>
+                @if($restaurantAddress)
+                    <p class="text-gray-600 text-sm mb-1">{{ $restaurantAddress }}</p>
+                @endif
                 <p class="text-gray-500 text-sm mb-4">Struk Restoran</p>
                 <div class="border-t border-b border-dashed border-gray-300 py-3 my-4">
                     <p class="text-sm"><strong>Transaksi:</strong> {{ $reprintTransaction->transaction_code }}</p>

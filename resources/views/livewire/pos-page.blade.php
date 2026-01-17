@@ -431,7 +431,7 @@
                     <span class="text-gray-800">Rp {{ number_format($this->subtotal, 0, ',', '.') }}</span>
                 </div>
                 <div class="flex justify-between text-xs">
-                    <span class="text-gray-500">Pajak (10%)</span>
+                    <span class="text-gray-500">Pajak ({{ $taxPercentage }}%)</span>
                     <span class="text-gray-800">Rp {{ number_format($this->tax, 0, ',', '.') }}</span>
                 </div>
                 <div class="h-px bg-gray-200 my-1.5"></div>
@@ -455,7 +455,10 @@
     {{-- Print Receipt --}}
     <div id="print-receipt" class="hidden print:block p-8 bg-white">
         <div class="max-w-xs mx-auto text-center">
-            <h1 class="text-2xl font-bold mb-1">Kasir App</h1>
+            <h1 class="text-2xl font-bold mb-1">{{ $restaurantName }}</h1>
+            @if($restaurantAddress)
+                <p class="text-gray-600 text-sm mb-1">{{ $restaurantAddress }}</p>
+            @endif
             <p class="text-gray-500 text-sm mb-4">Struk Restoran</p>
             <div class="border-t border-b border-dashed border-gray-300 py-3 my-4 text-left">
                 <p class="text-sm"><strong>Kode:</strong> {{ $lastTransactionCode }}</p>
@@ -493,7 +496,7 @@
             <div class="border-t border-dashed border-gray-300 pt-3 space-y-1 text-left">
                 <div class="flex justify-between text-sm"><span>Subtotal</span><span>Rp
                         {{ number_format($this->subtotal, 0, ',', '.') }}</span></div>
-                <div class="flex justify-between text-sm"><span>Tax (10%)</span><span>Rp
+                <div class="flex justify-between text-sm"><span>Pajak ({{ $taxPercentage }}%)</span><span>Rp
                         {{ number_format($this->tax, 0, ',', '.') }}</span></div>
                 <div class="flex justify-between font-bold text-lg pt-2 border-t border-gray-200">
                     <span>Total</span><span>Rp {{ number_format($this->total, 0, ',', '.') }}</span>
