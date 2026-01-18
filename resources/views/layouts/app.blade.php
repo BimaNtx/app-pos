@@ -256,7 +256,7 @@
         </aside>
 
         {{-- Main Content --}}
-        <div class="flex-1 flex flex-col h-full overflow-hidden pt-14 lg:pt-0">
+        <div class="flex-1 flex flex-col h-full overflow-y-auto pt-14 lg:pt-0">
             {{ $slot }}
         </div>
     </div>
