@@ -3,6 +3,7 @@
 namespace App\Livewire;
 
 use App\Models\Transaction;
+use App\Models\TransactionDetail;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
 use Livewire\WithPagination;
@@ -14,10 +15,19 @@ class Transactions extends Component
 
     public string $search = '';
     public string $dateFilter = '';
-    
+
     // Reprint state
     public ?int $reprintId = null;
     public ?Transaction $reprintTransaction = null;
+
+    // CRUD Modal states
+    public bool $showDetailModal = false;
+    public bool $showEditModal = false;
+    public ?Transaction $selectedTransaction = null;
+
+    // Edit form data
+    public string $editCustomerName = '';
+    public array $editItems = [];
 
     public function updatingSearch(): void
     {
@@ -44,12 +54,146 @@ class Transactions extends Component
         $this->reprintTransaction = null;
     }
 
+    /**
+     * View transaction detail in modal
+     */
+    public function viewDetail(int $id): void
+    {
+        $this->selectedTransaction = Transaction::with('details.product')->find($id);
+        if ($this->selectedTransaction) {
+            $this->showDetailModal = true;
+        }
+    }
+
+    /**
+     * Open edit modal for transaction
+     */
+    public function editTransaction(int $id): void
+    {
+        $this->selectedTransaction = Transaction::with('details.product')->find($id);
+        if ($this->selectedTransaction) {
+            $this->editCustomerName = $this->selectedTransaction->customer_name;
+            $this->editItems = $this->selectedTransaction->details->map(function ($detail) {
+                return [
+                    'id' => $detail->id,
+                    'product_id' => $detail->product_id,
+                    'product_name' => $detail->product->name ?? 'Produk tidak ditemukan',
+                    'quantity' => $detail->quantity,
+                    'price_at_time' => $detail->price_at_time,
+                ];
+            })->toArray();
+            $this->showEditModal = true;
+        }
+    }
+
+    /**
+     * Update item quantity
+     */
+    public function updateItemQuantity(int $index, int $quantity): void
+    {
+        if ($quantity >= 1) {
+            $this->editItems[$index]['quantity'] = $quantity;
+        }
+    }
+
+    /**
+     * Remove item from transaction (must have at least 1 item)
+     */
+    public function removeItem(int $index): void
+    {
+        if (count($this->editItems) > 1) {
+            unset($this->editItems[$index]);
+            $this->editItems = array_values($this->editItems);
+        }
+    }
+
+    /**
+     * Calculate edit total
+     */
+    public function getEditTotalProperty(): float
+    {
+        $subtotal = collect($this->editItems)->sum(function ($item) {
+            return $item['quantity'] * $item['price_at_time'];
+        });
+        // Apply 11% tax
+        return $subtotal * 1.11;
+    }
+
+    /**
+     * Save transaction changes
+     */
+    public function updateTransaction(): void
+    {
+        if (!$this->selectedTransaction) {
+            return;
+        }
+
+        // Update customer name
+        $this->selectedTransaction->update([
+            'customer_name' => $this->editCustomerName,
+        ]);
+
+        // Get current detail IDs
+        $existingIds = collect($this->editItems)->pluck('id')->filter()->toArray();
+
+        // Delete removed items
+        $this->selectedTransaction->details()
+            ->whereNotIn('id', $existingIds)
+            ->delete();
+
+        // Update existing items
+        foreach ($this->editItems as $item) {
+            if (isset($item['id']) && $item['id']) {
+                TransactionDetail::where('id', $item['id'])->update([
+                    'quantity' => $item['quantity'],
+                ]);
+            }
+        }
+
+        // Recalculate total
+        $subtotal = $this->selectedTransaction->details()->get()->sum(function ($detail) {
+            return $detail->quantity * $detail->price_at_time;
+        });
+        $this->selectedTransaction->update([
+            'total_amount' => $subtotal * 1.11,
+        ]);
+
+        $this->closeModals();
+        session()->flash('message', 'Transaksi berhasil diperbarui!');
+    }
+
+    /**
+     * Delete transaction with confirmation
+     */
+    public function deleteTransaction(int $id): void
+    {
+        $transaction = Transaction::find($id);
+        if ($transaction) {
+            // Delete related details first
+            $transaction->details()->delete();
+            $transaction->delete();
+            session()->flash('message', 'Transaksi berhasil dihapus!');
+        }
+    }
+
+    /**
+     * Close all modals
+     */
+    public function closeModals(): void
+    {
+        $this->showDetailModal = false;
+        $this->showEditModal = false;
+        $this->selectedTransaction = null;
+        $this->editCustomerName = '';
+        $this->editItems = [];
+    }
+
     public function render()
     {
         $transactions = Transaction::with('details.product')
             ->when($this->search, function ($query) {
                 $query->where('transaction_code', 'like', '%' . $this->search . '%')
-                      ->orWhere('customer_name', 'like', '%' . $this->search . '%');
+                    ->orWhere('customer_name', 'like', '%' . $this->search . '%');
             })
             ->when($this->dateFilter, function ($query) {
                 $query->whereDate('created_at', $this->dateFilter);
