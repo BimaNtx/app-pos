@@ -16,10 +16,10 @@ class DatabaseSeeder extends Seeder
     public function run(): void
     {
         // Create Admin User
-        User::factory()->create([
+        User::create([
             'name' => 'Admin',
             'email' => 'admin@kasir.app',
-            'password' => 'password123',
+            'password' => 'password123', // Will be auto-hashed by model cast
             'position' => 'admin',
             'is_admin' => true,
             'is_active' => true,

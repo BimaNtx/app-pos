@@ -30,6 +30,20 @@ class Settings extends Component
     #[Rule('required|numeric|min:0|max:100')]
     public float $taxPercentage = 10;
 
+    #[Rule('required|numeric|min:0|max:100')]
+    public float $discountPercentage = 0;
+
+    #[Rule('required|numeric|min:1')]
+    public int $discountMinItems = 1;
+
+    #[Rule('required|numeric|min:0')]
+    public float $discountMinTotal = 0;
+
+    #[Rule('required|in:total,quantity')]
+    public string $discountConditionMode = 'total';
+
+    public bool $discountEnabled = true;
+
     public bool $saved = false;
 
     public $restoreFile;
@@ -44,6 +58,11 @@ class Settings extends Component
             $this->restaurantName = $settings['restaurant_name'] ?? 'Kasir App';
             $this->restaurantAddress = $settings['restaurant_address'] ?? '';
             $this->taxPercentage = $settings['tax_percentage'] ?? 10;
+            $this->discountPercentage = $settings['discount_percentage'] ?? 0;
+            $this->discountMinItems = $settings['discount_min_items'] ?? 1;
+            $this->discountMinTotal = $settings['discount_min_total'] ?? 0;
+            $this->discountConditionMode = $settings['discount_condition_mode'] ?? 'total';
+            $this->discountEnabled = $settings['discount_enabled'] ?? true;
         }
     }
 
@@ -55,6 +74,11 @@ class Settings extends Component
             'restaurant_name' => $this->restaurantName,
             'restaurant_address' => $this->restaurantAddress,
             'tax_percentage' => $this->taxPercentage,
+            'discount_percentage' => $this->discountPercentage,
+            'discount_min_items' => $this->discountMinItems,
+            'discount_min_total' => $this->discountMinTotal,
+            'discount_condition_mode' => $this->discountConditionMode,
+            'discount_enabled' => $this->discountEnabled,
         ];
 
         $settingsPath = storage_path('app/settings.json');

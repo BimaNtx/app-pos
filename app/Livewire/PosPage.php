@@ -45,17 +45,44 @@ class PosPage extends Component
     public string $paymentMethod = 'cash';
     public $amountReceived = '';
 
+    // Discount
+    public string $discountType = 'percentage'; // 'percentage' or 'fixed'
+    public $discountValue = '';
+    public int $discountMinItems = 1;
+    public float $discountMinTotal = 0;
+    public string $discountConditionMode = 'total';
+
     // Success State
     public bool $showSuccess = false;
     public ?string $lastTransactionCode = null;
 
     public function mount(): void
     {
-        // Load tax percentage from settings
+        // Load tax percentage and discount from settings
         $settingsPath = storage_path('app/settings.json');
         if (File::exists($settingsPath)) {
             $settings = json_decode(File::get($settingsPath), true);
             $this->taxPercentage = $settings['tax_percentage'] ?? 10;
+            
+            // Only set discount if the discount feature is enabled
+            $discountEnabled = $settings['discount_enabled'] ?? true;
+            
+            if ($discountEnabled) {
+                $defaultDiscount = $settings['discount_percentage'] ?? 0;
+                $this->discountMinItems = $settings['discount_min_items'] ?? 1;
+                $this->discountMinTotal = $settings['discount_min_total'] ?? 0;
+                $this->discountConditionMode = $settings['discount_condition_mode'] ?? 'total';
+
+                if ($defaultDiscount > 0) {
+                    $this->discountType = 'percentage';
+                    $this->discountValue = $defaultDiscount;
+                }
+            } else {
+                // Discount is disabled - reset to no discount
+                $this->discountValue = 0;
+                $this->discountMinItems = 1;
+                $this->discountMinTotal = 0;
+            }
         }
     }
 
@@ -205,9 +232,37 @@ class PosPage extends Component
     }
 
     #[Computed]
+    public function discountAmount(): float
+    {
+        // Check conditions based on mode
+        if ($this->discountConditionMode === 'quantity') {
+            if ($this->cartCount < $this->discountMinItems) {
+                return 0;
+            }
+        } else {
+            // Default to 'total' mode
+            if ($this->subtotal < $this->discountMinTotal) {
+                return 0;
+            }
+        }
+
+        $value = (float) ($this->discountValue ?: 0);
+        if ($value <= 0) return 0;
+
+        if ($this->discountType === 'percentage') {
+            // Percentage discount (max 100%)
+            $percentage = min(100, $value);
+            return $this->subtotal * ($percentage / 100);
+        } else {
+            // Fixed discount (max = subtotal)
+            return min($value, $this->subtotal);
+        }
+    }
+
+    #[Computed]
     public function total(): float
     {
-        return $this->subtotal + $this->tax;
+        return max(0, $this->subtotal + $this->tax - $this->discountAmount);
     }
 
     #[Computed]
@@ -245,6 +300,9 @@ class PosPage extends Component
                 'order_type' => $this->orderType,
                 'table_number' => $this->orderType === 'dine_in' ? $this->tableNumber : null,
                 'payment_method' => $this->paymentMethod,
+                'discount_type' => $this->discountAmount > 0 ? $this->discountType : null,
+                'discount_value' => $this->discountValue ?: 0,
+                'discount_amount' => $this->discountAmount,
                 'total_amount' => $this->total,
                 'amount_received' => $this->paymentMethod === 'cash' ? $this->amountReceived : $this->total,
                 'change_amount' => $this->paymentMethod === 'cash' ? $this->change : 0,
@@ -274,6 +332,8 @@ class PosPage extends Component
         $this->customerName = '';
         $this->tableNumber = '';
         $this->orderType = 'dine_in';
+        $this->discountType = 'percentage';
+        $this->discountValue = '';
         $this->showSuccess = false;
         $this->lastTransactionCode = null;
         $this->resetValidation();
