@@ -7,7 +7,7 @@
                 <p class="text-gray-500 text-sm">Analitik dan wawasan penjualan</p>
             </div>
             {{-- Period Selector --}}
-            <div class="flex gap-2 items-center">
+            <div class="flex gap-2 items-center flex-wrap">
                 @foreach(['today' => 'Hari Ini', 'week' => 'Minggu Ini', 'month' => 'Bulan Ini', 'year' => 'Tahun Ini'] as $key => $label)
                     <button wire:click="setPeriod('{{ $key }}')"
                         class="px-4 py-2 rounded-lg text-sm font-medium transition-colors {{ $period === $key ? 'bg-teal-600 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200' }}">
@@ -91,9 +91,11 @@
                     <div>
                         <p class="text-sm font-medium" style="color: rgba(255,255,255,0.8);">Total Pemasukan</p>
                         <p class="text-3xl font-bold text-white mt-1">Rp
-                            {{ number_format($this->totalSales, 0, ',', '.') }}</p>
+                            {{ number_format($this->totalSales, 0, ',', '.') }}
+                        </p>
                         <p class="text-xs mt-2" style="color: rgba(255,255,255,0.7);">Dari
-                            {{ $this->totalTransactions }} transaksi</p>
+                            {{ $this->totalTransactions }} transaksi
+                        </p>
                     </div>
                     <div class="w-14 h-14 rounded-2xl flex items-center justify-center"
                         style="background: rgba(255,255,255,0.2);">
@@ -111,9 +113,11 @@
                     <div>
                         <p class="text-sm font-medium" style="color: rgba(255,255,255,0.8);">Total Pengeluaran</p>
                         <p class="text-3xl font-bold text-white mt-1">Rp
-                            {{ number_format($this->totalExpenses, 0, ',', '.') }}</p>
+                            {{ number_format($this->totalExpenses, 0, ',', '.') }}
+                        </p>
                         <p class="text-xs mt-2" style="color: rgba(255,255,255,0.7);">
-                            {{ $this->expensesByCategory->count() }} kategori</p>
+                            {{ $this->expensesByCategory->count() }} kategori
+                        </p>
                     </div>
                     <div class="w-14 h-14 rounded-2xl flex items-center justify-center"
                         style="background: rgba(255,255,255,0.2);">
