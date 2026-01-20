@@ -1,11 +1,11 @@
 <div class="flex-1 overflow-y-auto">
     {{-- Header --}}
-    <div class="bg-white border-b border-gray-200 px-6 py-4">
+    <div class="bg-white border-b border-gray-200 px-4 md:px-6 py-4">
         <h1 class="text-2xl font-bold text-gray-800">Pengaturan</h1>
         <p class="text-gray-500 text-sm">Konfigurasi pengaturan restoran Anda</p>
     </div>
 
-    <div class="p-6">
+    <div class="p-4 md:p-6">
         {{-- Success Message --}}
         @if($saved)
             <div class="mb-6 p-4 bg-green-50 border border-green-200 rounded-xl flex items-center gap-3">
@@ -92,14 +92,12 @@
                                     
                                     {{-- Percentage Input --}}
                                     <div class="bg-white rounded-xl p-5 border border-teal-100 shadow-sm">
-                                        <label class="block text-sm font-semibold text-gray-700 mb-2">Besar Diskon</label>
-                                        <div class="flex items-center gap-4">
-                                            <div class="relative w-40">
-                                                <input type="number" wire:model="discountPercentage" min="0" max="100" step="0.1"
-                                                    class="w-full text-lg font-bold text-center px-4 py-3 pr-12 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all">
-                                                <span class="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 font-bold">%</span>
-                                            </div>
-                                            <p class="text-gray-500 text-sm flex-1">Persentase ini akan otomatis memotong total belanja pelanggan ketika syarat terpenuhi.</p>
+                                        <label class="block text-sm font-semibold text-gray-700 mb-1">Besar Diskon</label>
+                                        <p class="text-gray-500 text-sm mb-3">Persentase ini akan otomatis memotong total belanja pelanggan ketika syarat terpenuhi.</p>
+                                        <div class="relative w-full md:w-40">
+                                            <input type="number" wire:model="discountPercentage" min="0" max="100" step="0.1"
+                                                class="w-full text-lg font-bold text-center px-4 py-3 pr-12 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all">
+                                            <span class="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 font-bold">%</span>
                                         </div>
                                         @error('discountPercentage') <span class="text-red-500 text-xs mt-1 block">{{ $message }}</span> @enderror
                                     </div>
@@ -208,13 +206,13 @@
             </div>
             <div class="p-6 space-y-4">
                 {{-- Clear Cache --}}
-                <div class="flex items-center justify-between p-4 bg-gray-50 rounded-xl">
+                <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 p-4 bg-gray-50 rounded-xl">
                     <div>
                         <p class="font-medium text-gray-800">Bersihkan Cache</p>
                         <p class="text-gray-500 text-sm">Bersihkan cache aplikasi untuk mempercepat performa</p>
                     </div>
                     <button type="button" wire:click="clearCache" wire:loading.attr="disabled" wire:target="clearCache"
-                        class="px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 font-medium rounded-lg transition-colors text-sm inline-flex items-center gap-2">
+                        class="w-full md:w-auto shrink-0 px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 font-medium rounded-lg transition-colors text-sm inline-flex items-center justify-center gap-2">
                         <svg wire:loading wire:target="clearCache" class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
                             <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                             <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
@@ -224,13 +222,13 @@
                 </div>
 
                 {{-- Backup Data --}}
-                <div class="flex items-center justify-between p-4 bg-blue-50 rounded-xl">
+                <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 p-4 bg-blue-50 rounded-xl">
                     <div>
                         <p class="font-medium text-blue-800">Backup Data</p>
                         <p class="text-blue-600 text-sm">Download seluruh data sebagai file backup</p>
                     </div>
                     <button type="button" wire:click="downloadBackup" wire:loading.attr="disabled" wire:target="downloadBackup"
-                        class="px-4 py-2 bg-blue-100 hover:bg-blue-200 text-blue-700 font-medium rounded-lg transition-colors text-sm inline-flex items-center gap-2">
+                        class="w-full md:w-auto shrink-0 px-4 py-2 bg-blue-100 hover:bg-blue-200 text-blue-700 font-medium rounded-lg transition-colors text-sm inline-flex items-center justify-center gap-2">
                         <svg wire:loading wire:target="downloadBackup" class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
                             <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                             <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
@@ -244,17 +242,15 @@
 
                 {{-- Restore Data --}}
                 <div class="p-4 bg-green-50 rounded-xl">
-                    <div class="flex items-center justify-between mb-3">
-                        <div>
-                            <p class="font-medium text-green-800">Restore Data</p>
-                            <p class="text-green-600 text-sm">Upload file backup untuk mengembalikan data</p>
-                        </div>
+                    <div class="mb-3">
+                        <p class="font-medium text-green-800">Restore Data</p>
+                        <p class="text-green-600 text-sm">Upload file backup untuk mengembalikan data</p>
                     </div>
-                    <div class="flex items-center gap-3">
+                    <div class="flex flex-col md:flex-row md:items-center gap-3">
                         <input type="file" wire:model="restoreFile" accept=".json" id="restore-file-input"
-                            class="flex-1 text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-green-100 file:text-green-700 hover:file:bg-green-200 cursor-pointer">
+                            class="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-green-100 file:text-green-700 hover:file:bg-green-200 cursor-pointer">
                         <button type="button" id="restore-btn" @if(!$restoreFile) disabled @endif
-                            class="px-4 py-2 bg-green-600 hover:bg-green-700 disabled:bg-gray-300 disabled:cursor-not-allowed text-white font-medium rounded-lg transition-colors text-sm inline-flex items-center gap-2">
+                            class="w-full md:w-auto shrink-0 px-4 py-2 bg-green-600 hover:bg-green-700 disabled:bg-gray-300 disabled:cursor-not-allowed text-white font-medium rounded-lg transition-colors text-sm inline-flex items-center justify-center gap-2">
                             <svg wire:loading wire:target="restoreData" class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
                                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                                 <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
@@ -269,13 +265,13 @@
                 </div>
 
                 {{-- Reset Data (Danger Zone) --}}
-                <div class="flex items-center justify-between p-4 bg-red-50 rounded-xl border border-red-200">
+                <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 p-4 bg-red-50 rounded-xl border border-red-200">
                     <div>
                         <p class="font-medium text-red-800">⚠️ Reset Semua Data</p>
                         <p class="text-red-600 text-sm">Ini akan menghapus semua transaksi, produk, dan kategori secara permanen</p>
                     </div>
                     <button type="button" id="reset-btn"
-                        class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white font-medium rounded-lg transition-colors text-sm">
+                        class="w-full md:w-auto shrink-0 px-4 py-2 bg-red-600 hover:bg-red-700 text-white font-medium rounded-lg transition-colors text-sm">
                         Reset
                     </button>
                 </div>
