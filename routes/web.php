@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\ReportController;
 use App\Livewire\Categories;
 use App\Livewire\Dashboard;
 use App\Livewire\Employees;
@@ -38,5 +39,6 @@ Route::middleware('auth')->group(function () {
     Route::get('/logistics', Logistics::class)->name('logistics');
     Route::get('/employees', Employees::class)->name('employees');
     Route::get('/expenses', Expenses::class)->name('expenses');
+    Route::get('/reports/download-pdf/{period}', [ReportController::class, 'downloadPdf'])->name('reports.download-pdf');
 });
 

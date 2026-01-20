@@ -7,13 +7,23 @@
                 <p class="text-gray-500 text-sm">Analitik dan wawasan penjualan</p>
             </div>
             {{-- Period Selector --}}
-            <div class="flex gap-2">
+            <div class="flex gap-2 items-center">
                 @foreach(['today' => 'Hari Ini', 'week' => 'Minggu Ini', 'month' => 'Bulan Ini', 'year' => 'Tahun Ini'] as $key => $label)
                     <button wire:click="setPeriod('{{ $key }}')"
                         class="px-4 py-2 rounded-lg text-sm font-medium transition-colors {{ $period === $key ? 'bg-teal-600 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200' }}">
                         {{ $label }}
                     </button>
                 @endforeach
+
+                {{-- Download PDF Button --}}
+                <a href="{{ route('reports.download-pdf', $period) }}"
+                    class="ml-2 px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg text-sm font-medium transition-colors flex items-center gap-2">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                    Download PDF
+                </a>
             </div>
         </div>
     </div>
@@ -26,7 +36,8 @@
                     <div>
                         <p class="text-gray-500 text-sm font-medium">Total Penjualan</p>
                         <p class="text-3xl font-bold text-gray-800 mt-1">Rp
-                            {{ number_format($this->totalSales, 0, ',', '.') }}</p>
+                            {{ number_format($this->totalSales, 0, ',', '.') }}
+                        </p>
                     </div>
                     <div class="w-14 h-14 bg-teal-100 rounded-2xl flex items-center justify-center">
                         <svg class="w-7 h-7 text-teal-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -58,7 +69,8 @@
                     <div>
                         <p class="text-gray-500 text-sm font-medium">Rata-rata Pesanan</p>
                         <p class="text-3xl font-bold text-gray-800 mt-1">Rp
-                            {{ number_format($this->averageOrder, 0, ',', '.') }}</p>
+                            {{ number_format($this->averageOrder, 0, ',', '.') }}
+                        </p>
                     </div>
                     <div class="w-14 h-14 bg-purple-100 rounded-2xl flex items-center justify-center">
                         <svg class="w-7 h-7 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -73,14 +85,18 @@
         {{-- Financial Summary Cards --}}
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
             {{-- Total Pemasukan --}}
-            <div class="rounded-2xl p-6 shadow-lg" style="background: linear-gradient(135deg, #22c55e 0%, #059669 100%);">
+            <div class="rounded-2xl p-6 shadow-lg"
+                style="background: linear-gradient(135deg, #22c55e 0%, #059669 100%);">
                 <div class="flex items-center justify-between">
                     <div>
                         <p class="text-sm font-medium" style="color: rgba(255,255,255,0.8);">Total Pemasukan</p>
-                        <p class="text-3xl font-bold text-white mt-1">Rp {{ number_format($this->totalSales, 0, ',', '.') }}</p>
-                        <p class="text-xs mt-2" style="color: rgba(255,255,255,0.7);">Dari {{ $this->totalTransactions }} transaksi</p>
+                        <p class="text-3xl font-bold text-white mt-1">Rp
+                            {{ number_format($this->totalSales, 0, ',', '.') }}</p>
+                        <p class="text-xs mt-2" style="color: rgba(255,255,255,0.7);">Dari
+                            {{ $this->totalTransactions }} transaksi</p>
                     </div>
-                    <div class="w-14 h-14 rounded-2xl flex items-center justify-center" style="background: rgba(255,255,255,0.2);">
+                    <div class="w-14 h-14 rounded-2xl flex items-center justify-center"
+                        style="background: rgba(255,255,255,0.2);">
                         <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
                         </svg>
@@ -89,14 +105,18 @@
             </div>
 
             {{-- Total Pengeluaran --}}
-            <div class="rounded-2xl p-6 shadow-lg" style="background: linear-gradient(135deg, #ef4444 0%, #e11d48 100%);">
+            <div class="rounded-2xl p-6 shadow-lg"
+                style="background: linear-gradient(135deg, #ef4444 0%, #e11d48 100%);">
                 <div class="flex items-center justify-between">
                     <div>
                         <p class="text-sm font-medium" style="color: rgba(255,255,255,0.8);">Total Pengeluaran</p>
-                        <p class="text-3xl font-bold text-white mt-1">Rp {{ number_format($this->totalExpenses, 0, ',', '.') }}</p>
-                        <p class="text-xs mt-2" style="color: rgba(255,255,255,0.7);">{{ $this->expensesByCategory->count() }} kategori</p>
+                        <p class="text-3xl font-bold text-white mt-1">Rp
+                            {{ number_format($this->totalExpenses, 0, ',', '.') }}</p>
+                        <p class="text-xs mt-2" style="color: rgba(255,255,255,0.7);">
+                            {{ $this->expensesByCategory->count() }} kategori</p>
                     </div>
-                    <div class="w-14 h-14 rounded-2xl flex items-center justify-center" style="background: rgba(255,255,255,0.2);">
+                    <div class="w-14 h-14 rounded-2xl flex items-center justify-center"
+                        style="background: rgba(255,255,255,0.2);">
                         <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4" />
                         </svg>
@@ -105,12 +125,14 @@
             </div>
 
             {{-- Laba Bersih --}}
-            <div class="rounded-2xl p-6 shadow-lg" style="background: linear-gradient(135deg, {{ $this->netProfit >= 0 ? '#3b82f6, #4f46e5' : '#4b5563, #374151' }});">
+            <div class="rounded-2xl p-6 shadow-lg"
+                style="background: linear-gradient(135deg, {{ $this->netProfit >= 0 ? '#3b82f6, #4f46e5' : '#4b5563, #374151' }});">
                 <div class="flex items-center justify-between">
                     <div>
                         <p class="text-sm font-medium" style="color: rgba(255,255,255,0.8);">Laba Bersih</p>
                         <p class="text-3xl font-bold text-white mt-1">
-                            {{ $this->netProfit >= 0 ? '' : '-' }}Rp {{ number_format(abs($this->netProfit), 0, ',', '.') }}
+                            {{ $this->netProfit >= 0 ? '' : '-' }}Rp
+                            {{ number_format(abs($this->netProfit), 0, ',', '.') }}
                         </p>
                         <p class="text-xs mt-2" style="color: rgba(255,255,255,0.7);">
                             @if($this->totalSales > 0)
@@ -120,7 +142,8 @@
                             @endif
                         </p>
                     </div>
-                    <div class="w-14 h-14 rounded-2xl flex items-center justify-center" style="background: rgba(255,255,255,0.2);">
+                    <div class="w-14 h-14 rounded-2xl flex items-center justify-center"
+                        style="background: rgba(255,255,255,0.2);">
                         <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                 d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
@@ -197,7 +220,8 @@
                             <div class="text-right">
                                 <p class="font-semibold text-gray-800">{{ $product->total_qty }} terjual</p>
                                 <p class="text-xs text-teal-600">Rp
-                                    {{ number_format($product->total_revenue, 0, ',', '.') }}</p>
+                                    {{ number_format($product->total_revenue, 0, ',', '.') }}
+                                </p>
                             </div>
                         </div>
                     @empty
