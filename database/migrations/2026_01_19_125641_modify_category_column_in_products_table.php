@@ -2,7 +2,6 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration {
@@ -11,8 +10,14 @@ return new class extends Migration {
      */
     public function up(): void
     {
-        // For MySQL, we need to use raw SQL to change ENUM to VARCHAR
-        DB::statement("ALTER TABLE products MODIFY COLUMN category VARCHAR(100) NOT NULL");
+        // SQLite-compatible: just ensure the column exists as string
+        // The column is already a string type in SQLite, so this is a no-op
+        // For MySQL, Laravel's schema builder handles the change properly
+        if (Schema::getConnection()->getDriverName() !== 'sqlite') {
+            Schema::table('products', function (Blueprint $table) {
+                $table->string('category', 100)->change();
+            });
+        }
     }
 
     /**
@@ -20,7 +25,6 @@ return new class extends Migration {
      */
     public function down(): void
     {
-        // Revert back to ENUM (note: this may fail if data doesn't match enum values)
-        DB::statement("ALTER TABLE products MODIFY COLUMN category ENUM('food', 'drink', 'dessert') NOT NULL");
+        // No-op for SQLite, would require recreation of the table
     }
 };

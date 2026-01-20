@@ -64,10 +64,30 @@
                 </div>
 
                 <div class="p-6 space-y-5">
-                    {{-- Total --}}
-                    <div class="bg-gray-50 rounded-xl p-4 text-center">
-                        <p class="text-gray-500 text-sm">Total Pembayaran</p>
-                        <p class="text-3xl font-bold text-gray-800">Rp {{ number_format($this->total, 0, ',', '.') }}</p>
+                    {{-- Order Summary --}}
+                    <div class="bg-gray-50 rounded-xl p-4">
+                        <div class="space-y-2 text-sm">
+                            <div class="flex justify-between text-gray-600">
+                                <span>Subtotal</span>
+                                <span>Rp {{ number_format($this->subtotal, 0, ',', '.') }}</span>
+                            </div>
+                            <div class="flex justify-between text-gray-600">
+                                <span>Pajak ({{ $taxPercentage }}%)</span>
+                                <span>Rp {{ number_format($this->tax, 0, ',', '.') }}</span>
+                            </div>
+                            @if($this->discountAmount > 0)
+                                <div class="flex justify-between text-teal-600 font-medium">
+                                    <span>Diskon {{ $discountType === 'percentage' ? '(' . $discountValue . '%)' : '' }}</span>
+                                    <span>-Rp {{ number_format($this->discountAmount, 0, ',', '.') }}</span>
+                                </div>
+                            @endif
+                            <div class="border-t border-gray-200 pt-2 mt-2">
+                                <div class="flex justify-between items-center">
+                                    <span class="font-semibold text-gray-800">Total Pembayaran</span>
+                                    <span class="text-2xl font-bold text-teal-600">Rp {{ number_format($this->total, 0, ',', '.') }}</span>
+                                </div>
+                            </div>
+                        </div>
                     </div>
 
                     {{-- Payment Method --}}
@@ -425,6 +445,21 @@
 
         {{-- Cart Footer (PINNED AT BOTTOM) --}}
         <div class="border-t border-gray-200 p-3 bg-white shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)] flex-shrink-0">
+
+            {{-- Active Discount Indicator --}}
+            @if($discountType === 'percentage' && $discountValue > 0)
+                <div class="mb-3 flex items-center justify-between p-2.5 bg-teal-50 rounded-lg">
+                    <span class="text-xs font-medium text-teal-700 flex items-center gap-1">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
+                        </svg>
+                        Diskon Otomatis
+                    </span>
+                    <div class="flex items-center gap-1 bg-white px-2 py-1 rounded border border-teal-100 shadow-sm">
+                        <span class="text-teal-700 font-bold text-sm">{{ $discountValue }}%</span>
+                    </div>
+                </div>
+            @endif
             <div class="space-y-1 mb-3">
                 <div class="flex justify-between text-xs">
                     <span class="text-gray-500">Subtotal</span>
@@ -434,6 +469,12 @@
                     <span class="text-gray-500">Pajak ({{ $taxPercentage }}%)</span>
                     <span class="text-gray-800">Rp {{ number_format($this->tax, 0, ',', '.') }}</span>
                 </div>
+                @if($this->discountAmount > 0)
+                    <div class="flex justify-between text-xs">
+                        <span class="text-teal-600 font-medium">Diskon {{ $discountType === 'percentage' ? '(' . $discountValue . '%)' : '' }}</span>
+                        <span class="text-teal-600 font-medium">-Rp {{ number_format($this->discountAmount, 0, ',', '.') }}</span>
+                    </div>
+                @endif
                 <div class="h-px bg-gray-200 my-1.5"></div>
                 <div class="flex justify-between items-baseline">
                     <span class="text-gray-800 font-semibold text-sm">Total</span>
@@ -498,6 +539,10 @@
                         {{ number_format($this->subtotal, 0, ',', '.') }}</span></div>
                 <div class="flex justify-between text-sm"><span>Pajak ({{ $taxPercentage }}%)</span><span>Rp
                         {{ number_format($this->tax, 0, ',', '.') }}</span></div>
+                @if($this->discountAmount > 0)
+                    <div class="flex justify-between text-sm text-gray-600 italic"><span>Diskon {{ $discountType === 'percentage' ? '(' . $discountValue . '%)' : '' }}</span><span>-Rp
+                            {{ number_format($this->discountAmount, 0, ',', '.') }}</span></div>
+                @endif
                 <div class="flex justify-between font-bold text-lg pt-2 border-t border-gray-200">
                     <span>Total</span><span>Rp {{ number_format($this->total, 0, ',', '.') }}</span>
                 </div>

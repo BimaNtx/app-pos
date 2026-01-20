@@ -15,7 +15,15 @@ class Transaction extends Model
     protected $fillable = [
         'customer_name',
         'transaction_code',
+        'order_type',
+        'table_number',
+        'payment_method',
+        'discount_type',
+        'discount_value',
+        'discount_amount',
         'total_amount',
+        'amount_received',
+        'change_amount',
     ];
 
     /**
@@ -25,6 +33,10 @@ class Transaction extends Model
      */
     protected $casts = [
         'total_amount' => 'decimal:2',
+        'discount_value' => 'decimal:2',
+        'discount_amount' => 'decimal:2',
+        'amount_received' => 'decimal:2',
+        'change_amount' => 'decimal:2',
     ];
 
     /**

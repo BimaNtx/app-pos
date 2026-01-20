@@ -61,6 +61,122 @@
                     @error('taxPercentage') <span class="text-red-500 text-xs mt-1">{{ $message }}</span> @enderror
                     <p class="text-gray-500 text-xs mt-2">Persentase ini akan ditambahkan ke subtotal</p>
                 </div>
+
+                {{-- Discount Section --}}
+                <div class="mt-8">
+                    <div class="rounded-2xl border {{ $discountEnabled ? 'border-teal-200 bg-teal-50/30' : 'border-gray-200 bg-gray-50/50' }} transition-all duration-300 overflow-hidden">
+                        {{-- Header & Toggle --}}
+                        <div class="p-6 flex items-center justify-between cursor-pointer" wire:click="$toggle('discountEnabled')">
+                            <div class="flex-1 flex items-center gap-3">
+                                <div class="bg-teal-100/50 p-2 rounded-lg transition-colors duration-300 {{ $discountEnabled ? 'bg-teal-100 text-teal-600' : 'bg-gray-100 text-gray-400' }}">
+                                    <svg class="w-6 h-6 transition-transform duration-500 ease-in-out {{ $discountEnabled ? 'rotate-180' : '' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                                    </svg>
+                                </div>
+                                <div>
+                                    <h3 class="font-semibold transition-colors duration-300 {{ $discountEnabled ? 'text-teal-900' : 'text-gray-700' }}">Pengaturan Diskon</h3>
+                                    <p class="text-sm mt-1 transition-colors duration-300 {{ $discountEnabled ? 'text-teal-600' : 'text-gray-500' }}">
+                                        {{ $discountEnabled ? 'Diskon otomatis aktif' : 'Aktifkan untuk memberikan potongan harga otomatis' }}
+                                    </p>
+                                </div>
+                            </div>
+                            
+                            </div>
+                        </div>
+
+                        {{-- Collapsible Content --}}
+                        <div class="transition-all duration-500 ease-in-out overflow-hidden"
+                             style="{{ $discountEnabled ? 'max-height: 1000px; opacity: 1;' : 'max-height: 0px; opacity: 0;' }}">
+                            <div class="p-6 pt-0 space-y-6">
+                                    <hr class="border-teal-100/50 mb-6">
+                                    
+                                    {{-- Percentage Input --}}
+                                    <div class="bg-white rounded-xl p-5 border border-teal-100 shadow-sm">
+                                        <label class="block text-sm font-semibold text-gray-700 mb-2">Besar Diskon</label>
+                                        <div class="flex items-center gap-4">
+                                            <div class="relative w-40">
+                                                <input type="number" wire:model="discountPercentage" min="0" max="100" step="0.1"
+                                                    class="w-full text-lg font-bold text-center px-4 py-3 pr-12 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all">
+                                                <span class="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 font-bold">%</span>
+                                            </div>
+                                            <p class="text-gray-500 text-sm flex-1">Persentase ini akan otomatis memotong total belanja pelanggan ketika syarat terpenuhi.</p>
+                                        </div>
+                                        @error('discountPercentage') <span class="text-red-500 text-xs mt-1 block">{{ $message }}</span> @enderror
+                                    </div>
+
+                                    {{-- Conditions Grid --}}
+                                    <div class="grid md:grid-cols-2 gap-6">
+                                        {{-- Condition Type --}}
+                                        <div>
+                                            <label class="block text-sm font-semibold text-gray-700 mb-3">Pilih Syarat Diskon</label>
+                                            <div class="grid grid-cols-2 gap-3">
+                                                <label class="cursor-pointer group relative">
+                                                    <input type="radio" wire:model.live="discountConditionMode" value="total" class="peer sr-only">
+                                                    <div class="p-4 rounded-xl border-2 border-gray-200 bg-white hover:border-teal-300 peer-checked:bg-teal-50 peer-checked:border-teal-500 peer-checked:text-teal-700 transition-all text-center h-full flex flex-col items-center justify-center gap-2 shadow-sm group-active:scale-95">
+                                                        <div class="bg-teal-100 p-2 rounded-full text-teal-600 mb-1">
+                                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                                        </div>
+                                                        <span class="font-bold text-sm">Total Belanja</span>
+                                                        <div class="absolute top-2 right-2 opacity-0 peer-checked:opacity-100 transition-opacity">
+                                                            <svg class="w-4 h-4 text-teal-600" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg>
+                                                        </div>
+                                                    </div>
+                                                </label>
+                                                <label class="cursor-pointer group relative">
+                                                    <input type="radio" wire:model.live="discountConditionMode" value="quantity" class="peer sr-only">
+                                                    <div class="p-4 rounded-xl border-2 border-gray-200 bg-white hover:border-teal-300 peer-checked:bg-teal-50 peer-checked:border-teal-500 peer-checked:text-teal-700 transition-all text-center h-full flex flex-col items-center justify-center gap-2 shadow-sm group-active:scale-95">
+                                                        <div class="bg-blue-100 p-2 rounded-full text-blue-600 mb-1">
+                                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path></svg>
+                                                        </div>
+                                                        <span class="font-bold text-sm">Jumlah Barang</span>
+                                                        <div class="absolute top-2 right-2 opacity-0 peer-checked:opacity-100 transition-opacity">
+                                                            <svg class="w-4 h-4 text-teal-600" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg>
+                                                        </div>
+                                                    </div>
+                                                </label>
+                                            </div>
+                                        </div>
+
+                                        {{-- Threshold Input --}}
+                                        <div>
+                                            <label class="block text-sm font-semibold text-gray-700 mb-3">
+                                                @if($discountConditionMode === 'quantity')
+                                                    Minimal Barang
+                                                @else
+                                                    Minimal Total (Rp)
+                                                @endif
+                                            </label>
+                                            
+                                            <div class="bg-white p-1 rounded-xl border border-gray-200 shadow-sm focus-within:ring-2 focus-within:ring-teal-500 focus-within:border-teal-500 transition-all">
+                                                @if($discountConditionMode === 'quantity')
+                                                    <div class="relative">
+                                                        <input type="number" wire:model="discountMinItems" min="1"
+                                                            class="w-full pl-4 pr-12 py-3 bg-transparent border-none focus:ring-0 text-lg font-semibold text-gray-800 placeholder-gray-300">
+                                                        <span class="absolute right-4 top-1/2 -translate-y-1/2 text-sm font-medium text-gray-400">Item</span>
+                                                    </div>
+                                                    @error('discountMinItems') <span class="text-red-500 text-xs mt-1 px-4 mb-2 block">{{ $message }}</span> @enderror
+                                                @else
+                                                    <div class="relative">
+                                                        <span class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 font-medium">Rp</span>
+                                                        <input type="number" wire:model="discountMinTotal" min="0" step="1000"
+                                                            class="w-full pl-12 pr-4 py-3 bg-transparent border-none focus:ring-0 text-lg font-semibold text-gray-800 placeholder-gray-300">
+                                                    </div>
+                                                    @error('discountMinTotal') <span class="text-red-500 text-xs mt-1 px-4 mb-2 block">{{ $message }}</span> @enderror
+                                                @endif
+                                            </div>
+                                            <p class="text-gray-400 text-xs mt-2 ml-1">
+                                                @if($discountConditionMode === 'quantity')
+                                                    Diskon aktif jika keranjang berisi minimal jumlah ini.
+                                                @else
+                                                    Diskon aktif jika subtotal mencapai jumlah ini.
+                                                @endif
+                                            </p>
+                                        </div>
+                                    </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
 
             {{-- Save Button --}}
