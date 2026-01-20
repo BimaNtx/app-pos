@@ -23,6 +23,8 @@ class Transactions extends Component
     // CRUD Modal states
     public bool $showDetailModal = false;
     public bool $showEditModal = false;
+    public bool $showDeleteModal = false;
+    public ?int $deletingId = null;
     public ?Transaction $selectedTransaction = null;
 
     // Edit form data
@@ -163,17 +165,39 @@ class Transactions extends Component
     }
 
     /**
-     * Delete transaction with confirmation
+     * Confirm delete transaction
      */
-    public function deleteTransaction(int $id): void
+    public function confirmDeleteTransaction(int $id): void
     {
-        $transaction = Transaction::find($id);
-        if ($transaction) {
-            // Delete related details first
-            $transaction->details()->delete();
-            $transaction->delete();
-            session()->flash('message', 'Transaksi berhasil dihapus!');
+        $this->deletingId = $id;
+        $this->showDeleteModal = true;
+    }
+
+    /**
+     * Cancel delete
+     */
+    public function cancelDelete(): void
+    {
+        $this->showDeleteModal = false;
+        $this->deletingId = null;
+    }
+
+    /**
+     * Delete transaction
+     */
+    public function deleteTransaction(): void
+    {
+        if ($this->deletingId) {
+            $transaction = Transaction::find($this->deletingId);
+            if ($transaction) {
+                // Delete related details first
+                $transaction->details()->delete();
+                $transaction->delete();
+                session()->flash('message', 'Transaksi berhasil dihapus!');
+            }
         }
+        $this->showDeleteModal = false;
+        $this->deletingId = null;
     }
 
     /**

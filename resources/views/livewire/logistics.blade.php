@@ -101,8 +101,7 @@
                                                 d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                                         </svg>
                                     </button>
-                                    <button wire:confirm="Apakah Anda yakin ingin menghapus item ini?"
-                                        wire:click="delete({{ $item->id }})"
+                                    <button wire:click="confirmDelete({{ $item->id }})"
                                         class="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all"
                                         title="Hapus">
                                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -221,6 +220,33 @@
                         </button>
                     </div>
                 </form>
+            </div>
+        </div>
+    @endif
+
+    {{-- Delete Confirmation Modal --}}
+    @if($showDeleteModal)
+        <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50" wire:click.self="cancelDelete">
+            <div class="bg-white rounded-2xl shadow-2xl w-full max-w-sm text-center p-6">
+                <div class="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <svg class="w-8 h-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                    </svg>
+                </div>
+                <h3 class="text-lg font-bold text-gray-800 mb-2">Hapus Item?</h3>
+                <p class="text-gray-500 text-sm mb-6">Apakah Anda yakin ingin menghapus item ini? Tindakan ini tidak dapat
+                    dibatalkan.</p>
+                <div class="flex gap-3">
+                    <button wire:click="cancelDelete"
+                        class="flex-1 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium rounded-xl transition-colors">
+                        Batal
+                    </button>
+                    <button wire:click="delete"
+                        class="flex-1 py-2.5 bg-red-600 hover:bg-red-700 text-white font-medium rounded-xl transition-colors">
+                        Hapus
+                    </button>
+                </div>
             </div>
         </div>
     @endif

@@ -16,7 +16,8 @@ class Logistics extends Component
     public $search = '';
     public $isOpen = false;
     public $isEditMode = false;
-    public $deleteId = null;
+    public $showDeleteModal = false;
+    public $deletingId = null;
 
     // Form Fields
     #[Rule('required|min:3')]
@@ -103,9 +104,25 @@ class Logistics extends Component
         $this->openModal();
     }
 
-    public function delete($id)
+    public function confirmDelete($id)
     {
-        Logistic::find($id)->delete();
-        session()->flash('message', 'Item deleted successfully.');
+        $this->deletingId = $id;
+        $this->showDeleteModal = true;
+    }
+
+    public function cancelDelete()
+    {
+        $this->showDeleteModal = false;
+        $this->deletingId = null;
+    }
+
+    public function delete()
+    {
+        if ($this->deletingId) {
+            Logistic::find($this->deletingId)->delete();
+            session()->flash('message', 'Item berhasil dihapus.');
+        }
+        $this->showDeleteModal = false;
+        $this->deletingId = null;
     }
 }
