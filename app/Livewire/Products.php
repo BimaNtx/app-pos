@@ -110,9 +110,13 @@ class Products extends Component
             $imageUrl = $path;
         }
 
+        // Look up category_id from the selected category slug
+        $categoryModel = Category::where('slug', $this->category)->first();
+
         $data = [
             'name' => $this->name,
             'category' => $this->category,
+            'category_id' => $categoryModel?->id,
             'price' => $this->price,
             'image_url' => $imageUrl,
             'description' => $this->description ?: null,
@@ -145,7 +149,18 @@ class Products extends Component
     public function delete(): void
     {
         if ($this->deletingId) {
+            // Capture product name before deleting
+            $product = Product::find($this->deletingId);
+            $productName = $product?->name ?? '';
+            
+            // Delete the product
             Product::destroy($this->deletingId);
+            
+            // Dispatch event for category count refresh and notification
+            $this->dispatch('product-saved', [
+                'type' => 'deleted',
+                'name' => $productName,
+            ]);
         }
         $this->showDeleteModal = false;
         $this->deletingId = null;
