@@ -101,7 +101,7 @@ class Settings extends Component
 
     public function resetData(): void
     {
-        DB::statement('PRAGMA foreign_keys = OFF');
+        $this->disableForeignKeyChecks();
         
         TransactionDetail::truncate();
         Transaction::truncate();
@@ -110,7 +110,7 @@ class Settings extends Component
         Expense::truncate();
         Logistic::truncate();
         
-        DB::statement('PRAGMA foreign_keys = ON');
+        $this->enableForeignKeyChecks();
 
         $this->dispatch('data-reset');
     }
@@ -155,7 +155,7 @@ class Settings extends Component
                 return;
             }
 
-            DB::statement('PRAGMA foreign_keys = OFF');
+            $this->disableForeignKeyChecks();
             
             // Clear existing data
             TransactionDetail::truncate();
@@ -180,7 +180,31 @@ class Settings extends Component
 
             if (!empty($backup['data']['transactions'])) {
                 foreach ($backup['data']['transactions'] as $item) {
-                    Transaction::create($item);
+                    // Parse timestamps strictly with proper format
+                    $createdAt = isset($item['created_at']) 
+                        ? \Carbon\Carbon::parse($item['created_at'])->format('Y-m-d H:i:s')
+                        : now()->format('Y-m-d H:i:s');
+                    $updatedAt = isset($item['updated_at']) 
+                        ? \Carbon\Carbon::parse($item['updated_at'])->format('Y-m-d H:i:s')
+                        : now()->format('Y-m-d H:i:s');
+                    
+                    // Use DB insert for strict control
+                    DB::table('transactions')->insert([
+                        'id' => $item['id'] ?? null,
+                        'customer_name' => $item['customer_name'] ?? 'Guest',
+                        'transaction_code' => $item['transaction_code'] ?? Transaction::generateTransactionCode(),
+                        'order_type' => $item['order_type'] ?? 'dine_in',
+                        'table_number' => $item['table_number'] ?? null,
+                        'payment_method' => $item['payment_method'] ?? 'cash',
+                        'discount_type' => $item['discount_type'] ?? null,
+                        'discount_value' => (float) ($item['discount_value'] ?? 0),
+                        'discount_amount' => (float) ($item['discount_amount'] ?? 0),
+                        'total_amount' => (float) ($item['total_amount'] ?? 0),
+                        'amount_received' => (float) ($item['amount_received'] ?? 0),
+                        'change_amount' => (float) ($item['change_amount'] ?? 0),
+                        'created_at' => $createdAt,
+                        'updated_at' => $updatedAt,
+                    ]);
                 }
             }
 
@@ -192,7 +216,49 @@ class Settings extends Component
 
             if (!empty($backup['data']['expenses'])) {
                 foreach ($backup['data']['expenses'] as $item) {
-                    Expense::create($item);
+                    // Parse date strictly - handle ISO8601, Y-m-d, and other formats
+                    $rawDate = $item['date'] ?? null;
+                    if ($rawDate) {
+                        try {
+                            // Parse and convert to local timezone, then format as Y-m-d
+                            $parsedDate = \Carbon\Carbon::parse($rawDate)->format('Y-m-d');
+                        } catch (\Exception $e) {
+                            $parsedDate = now()->format('Y-m-d');
+                        }
+                    } else {
+                        $parsedDate = now()->format('Y-m-d');
+                    }
+                    
+                    // Ensure amount is a positive numeric value (using abs to handle negative strings)
+                    $rawAmount = $item['amount'] ?? 0;
+                    $amount = abs((float) preg_replace('/[^0-9.\-]/', '', (string) $rawAmount));
+                    
+                    // Handle created_by - use current auth user if original user doesn't exist
+                    $createdBy = $item['created_by'] ?? null;
+                    if ($createdBy && !\App\Models\User::find($createdBy)) {
+                        $createdBy = auth()->id() ?? 1;
+                    }
+                    $createdBy = $createdBy ?? auth()->id() ?? 1;
+                    
+                    // Parse timestamps
+                    $createdAt = isset($item['created_at']) 
+                        ? \Carbon\Carbon::parse($item['created_at'])->format('Y-m-d H:i:s')
+                        : now()->format('Y-m-d H:i:s');
+                    $updatedAt = isset($item['updated_at']) 
+                        ? \Carbon\Carbon::parse($item['updated_at'])->format('Y-m-d H:i:s')
+                        : now()->format('Y-m-d H:i:s');
+
+                    // Use DB insert for strict type control
+                    DB::table('expenses')->insert([
+                        'id' => $item['id'] ?? null,
+                        'date' => $parsedDate,
+                        'category' => $item['category'] ?? 'lainnya',
+                        'description' => $item['description'] ?? '',
+                        'amount' => $amount,
+                        'created_by' => $createdBy,
+                        'created_at' => $createdAt,
+                        'updated_at' => $updatedAt,
+                    ]);
                 }
             }
 
@@ -202,12 +268,41 @@ class Settings extends Component
                 }
             }
 
-            DB::statement('PRAGMA foreign_keys = ON');
+            $this->enableForeignKeyChecks();
 
             $this->restoreFile = null;
             $this->dispatch('data-restored');
         } catch (\Exception $e) {
+            $this->enableForeignKeyChecks();
             $this->dispatch('restore-error', message: 'Gagal restore data: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Disable foreign key checks (database-agnostic)
+     */
+    protected function disableForeignKeyChecks(): void
+    {
+        $driver = DB::connection()->getDriverName();
+        
+        if ($driver === 'sqlite') {
+            DB::statement('PRAGMA foreign_keys = OFF');
+        } elseif ($driver === 'mysql') {
+            DB::statement('SET FOREIGN_KEY_CHECKS = 0');
+        }
+    }
+
+    /**
+     * Enable foreign key checks (database-agnostic)
+     */
+    protected function enableForeignKeyChecks(): void
+    {
+        $driver = DB::connection()->getDriverName();
+        
+        if ($driver === 'sqlite') {
+            DB::statement('PRAGMA foreign_keys = ON');
+        } elseif ($driver === 'mysql') {
+            DB::statement('SET FOREIGN_KEY_CHECKS = 1');
         }
     }
 

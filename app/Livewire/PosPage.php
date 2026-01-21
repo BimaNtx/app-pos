@@ -8,6 +8,7 @@ use App\Models\Transaction;
 use App\Models\TransactionDetail;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Session;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Rule;
@@ -58,6 +59,12 @@ class PosPage extends Component
 
     public function mount(): void
     {
+        // Restore state from session
+        $this->cart = Session::get('pos.cart', []);
+        $this->customerName = Session::get('pos.customerName', '');
+        $this->tableNumber = Session::get('pos.tableNumber', '');
+        $this->orderType = Session::get('pos.orderType', 'dine_in');
+
         // Load tax percentage and discount from settings
         $settingsPath = storage_path('app/settings.json');
         if (File::exists($settingsPath)) {
@@ -84,6 +91,49 @@ class PosPage extends Component
                 $this->discountMinTotal = 0;
             }
         }
+    }
+
+    /**
+     * Save cart to session whenever it changes
+     */
+    protected function saveCartToSession(): void
+    {
+        Session::put('pos.cart', $this->cart);
+    }
+
+    /**
+     * Hook: Save customerName to session when updated
+     */
+    public function updatedCustomerName(): void
+    {
+        Session::put('pos.customerName', $this->customerName);
+    }
+
+    /**
+     * Hook: Save tableNumber to session when updated
+     */
+    public function updatedTableNumber(): void
+    {
+        Session::put('pos.tableNumber', $this->tableNumber);
+    }
+
+    /**
+     * Hook: Save orderType to session when updated
+     */
+    public function updatedOrderType(): void
+    {
+        Session::put('pos.orderType', $this->orderType);
+    }
+
+    /**
+     * Clear all POS session data (after successful transaction)
+     */
+    protected function clearPosSession(): void
+    {
+        Session::forget('pos.cart');
+        Session::forget('pos.customerName');
+        Session::forget('pos.tableNumber');
+        Session::forget('pos.orderType');
     }
 
     #[Computed]
@@ -119,6 +169,7 @@ class PosPage extends Component
         foreach ($this->cart as $index => $item) {
             if ($item['product_id'] === $productId && empty($item['note'])) {
                 $this->cart[$index]['quantity']++;
+                $this->saveCartToSession();
                 return;
             }
         }
@@ -131,6 +182,7 @@ class PosPage extends Component
             'quantity' => 1,
             'note' => '',
         ];
+        $this->saveCartToSession();
     }
 
     public function updateQuantity(int $index, int $change): void
@@ -143,6 +195,7 @@ class PosPage extends Component
             $this->removeFromCart($index);
         } else {
             $this->cart[$index]['quantity'] = $newQty;
+            $this->saveCartToSession();
         }
     }
 
@@ -150,6 +203,7 @@ class PosPage extends Component
     {
         unset($this->cart[$index]);
         $this->cart = array_values($this->cart);
+        $this->saveCartToSession();
     }
 
     // Note Modal
@@ -164,6 +218,7 @@ class PosPage extends Component
     {
         if ($this->noteEditIndex !== null && isset($this->cart[$this->noteEditIndex])) {
             $this->cart[$this->noteEditIndex]['note'] = $this->itemNote;
+            $this->saveCartToSession();
         }
         $this->closeNoteModal();
     }
@@ -328,6 +383,9 @@ class PosPage extends Component
 
     public function newOrder(): void
     {
+        // Clear session data after successful transaction
+        $this->clearPosSession();
+        
         $this->cart = [];
         $this->customerName = '';
         $this->tableNumber = '';
