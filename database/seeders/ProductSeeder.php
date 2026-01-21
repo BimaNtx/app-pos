@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Models\Category;
 use App\Models\Product;
 use Illuminate\Database\Seeder;
 
@@ -12,11 +13,28 @@ class ProductSeeder extends Seeder
      */
     public function run(): void
     {
+        // First, ensure categories exist and get their IDs
+        $categories = [
+            'food' => Category::firstOrCreate(
+                ['slug' => 'food'],
+                ['name' => 'Food', 'icon' => '🍚', 'color' => 'text-orange-700', 'bg_color' => 'bg-orange-100']
+            ),
+            'drink' => Category::firstOrCreate(
+                ['slug' => 'drink'],
+                ['name' => 'Drink', 'icon' => '🥤', 'color' => 'text-blue-700', 'bg_color' => 'bg-blue-100']
+            ),
+            'dessert' => Category::firstOrCreate(
+                ['slug' => 'dessert'],
+                ['name' => 'Dessert', 'icon' => '🍰', 'color' => 'text-pink-700', 'bg_color' => 'bg-pink-100']
+            ),
+        ];
+
         $products = [
             // Food items (5)
             [
                 'name' => 'Nasi Goreng Spesial',
                 'category' => 'food',
+                'category_id' => $categories['food']->id,
                 'price' => 25000,
                 'image_url' => 'https://placehold.co/400x300/e67e22/ffffff?text=Nasi+Goreng',
                 'description' => 'Nasi goreng dengan telur, ayam, dan sayuran segar',
@@ -24,6 +42,7 @@ class ProductSeeder extends Seeder
             [
                 'name' => 'Ayam Bakar Madu',
                 'category' => 'food',
+                'category_id' => $categories['food']->id,
                 'price' => 35000,
                 'image_url' => 'https://placehold.co/400x300/c0392b/ffffff?text=Ayam+Bakar',
                 'description' => 'Ayam bakar dengan bumbu madu spesial',
@@ -31,6 +50,7 @@ class ProductSeeder extends Seeder
             [
                 'name' => 'Sate Ayam',
                 'category' => 'food',
+                'category_id' => $categories['food']->id,
                 'price' => 30000,
                 'image_url' => 'https://placehold.co/400x300/d35400/ffffff?text=Sate+Ayam',
                 'description' => '10 tusuk sate ayam dengan bumbu kacang',
@@ -38,6 +58,7 @@ class ProductSeeder extends Seeder
             [
                 'name' => 'Mie Goreng Jawa',
                 'category' => 'food',
+                'category_id' => $categories['food']->id,
                 'price' => 22000,
                 'image_url' => 'https://placehold.co/400x300/f39c12/ffffff?text=Mie+Goreng',
                 'description' => 'Mie goreng dengan bumbu khas Jawa',
@@ -45,6 +66,7 @@ class ProductSeeder extends Seeder
             [
                 'name' => 'Nasi Campur Bali',
                 'category' => 'food',
+                'category_id' => $categories['food']->id,
                 'price' => 32000,
                 'image_url' => 'https://placehold.co/400x300/e74c3c/ffffff?text=Nasi+Campur',
                 'description' => 'Nasi dengan lauk pauk khas Bali',
@@ -54,6 +76,7 @@ class ProductSeeder extends Seeder
             [
                 'name' => 'Es Teh Manis',
                 'category' => 'drink',
+                'category_id' => $categories['drink']->id,
                 'price' => 8000,
                 'image_url' => 'https://placehold.co/400x300/27ae60/ffffff?text=Es+Teh',
                 'description' => 'Teh manis dingin yang menyegarkan',
@@ -61,6 +84,7 @@ class ProductSeeder extends Seeder
             [
                 'name' => 'Es Jeruk Segar',
                 'category' => 'drink',
+                'category_id' => $categories['drink']->id,
                 'price' => 12000,
                 'image_url' => 'https://placehold.co/400x300/f1c40f/ffffff?text=Es+Jeruk',
                 'description' => 'Jus jeruk segar dengan es',
@@ -68,6 +92,7 @@ class ProductSeeder extends Seeder
             [
                 'name' => 'Kopi Hitam',
                 'category' => 'drink',
+                'category_id' => $categories['drink']->id,
                 'price' => 10000,
                 'image_url' => 'https://placehold.co/400x300/2c3e50/ffffff?text=Kopi+Hitam',
                 'description' => 'Kopi hitam tubruk tradisional',
@@ -75,6 +100,7 @@ class ProductSeeder extends Seeder
             [
                 'name' => 'Jus Alpukat',
                 'category' => 'drink',
+                'category_id' => $categories['drink']->id,
                 'price' => 18000,
                 'image_url' => 'https://placehold.co/400x300/27ae60/ffffff?text=Jus+Alpukat',
                 'description' => 'Jus alpukat segar dengan susu',
@@ -82,6 +108,7 @@ class ProductSeeder extends Seeder
             [
                 'name' => 'Es Kelapa Muda',
                 'category' => 'drink',
+                'category_id' => $categories['drink']->id,
                 'price' => 15000,
                 'image_url' => 'https://placehold.co/400x300/1abc9c/ffffff?text=Es+Kelapa',
                 'description' => 'Air kelapa muda segar dengan daging kelapa',
@@ -91,6 +118,7 @@ class ProductSeeder extends Seeder
             [
                 'name' => 'Es Cendol',
                 'category' => 'dessert',
+                'category_id' => $categories['dessert']->id,
                 'price' => 12000,
                 'image_url' => 'https://placehold.co/400x300/16a085/ffffff?text=Es+Cendol',
                 'description' => 'Cendol dengan santan dan gula merah',
@@ -98,6 +126,7 @@ class ProductSeeder extends Seeder
             [
                 'name' => 'Pisang Goreng',
                 'category' => 'dessert',
+                'category_id' => $categories['dessert']->id,
                 'price' => 15000,
                 'image_url' => 'https://placehold.co/400x300/e67e22/ffffff?text=Pisang+Goreng',
                 'description' => 'Pisang goreng crispy dengan topping keju/coklat',
@@ -105,6 +134,7 @@ class ProductSeeder extends Seeder
             [
                 'name' => 'Es Campur',
                 'category' => 'dessert',
+                'category_id' => $categories['dessert']->id,
                 'price' => 18000,
                 'image_url' => 'https://placehold.co/400x300/9b59b6/ffffff?text=Es+Campur',
                 'description' => 'Es campur dengan berbagai topping',
@@ -112,6 +142,7 @@ class ProductSeeder extends Seeder
             [
                 'name' => 'Klepon',
                 'category' => 'dessert',
+                'category_id' => $categories['dessert']->id,
                 'price' => 10000,
                 'image_url' => 'https://placehold.co/400x300/2ecc71/ffffff?text=Klepon',
                 'description' => 'Kue klepon isi gula merah (5 pcs)',
@@ -119,6 +150,7 @@ class ProductSeeder extends Seeder
             [
                 'name' => 'Dadar Gulung',
                 'category' => 'dessert',
+                'category_id' => $categories['dessert']->id,
                 'price' => 12000,
                 'image_url' => 'https://placehold.co/400x300/3498db/ffffff?text=Dadar+Gulung',
                 'description' => 'Dadar gulung isi kelapa manis (3 pcs)',

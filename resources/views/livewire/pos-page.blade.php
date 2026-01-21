@@ -44,80 +44,92 @@
         </div>
     @endif
 
-    {{-- Payment Modal --}}
-    @if($showPaymentModal)
-        <div class="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 p-4"
-            wire:click.self="closePaymentModal">
-            <div class="bg-white rounded-2xl max-w-md w-full shadow-2xl animate-bounce-in overflow-hidden">
-                {{-- Header --}}
-                <div class="bg-gradient-to-r from-teal-600 to-teal-700 px-6 py-4 text-white">
-                    <div class="flex items-center justify-between">
-                        <h3 class="text-xl font-bold">Pembayaran</h3>
-                        <button wire:click="closePaymentModal" class="p-1 hover:bg-white/20 rounded-lg transition-colors">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M6 18L18 6M6 6l12 12" />
+    {{-- Payment Modal with Alpine.js Transitions --}}
+    <div x-data="{ show: @entangle('showPaymentModal') }" 
+         x-cloak>
+        
+        {{-- Backdrop --}}
+        <div x-show="show"
+             x-transition:enter="transition ease-out duration-300"
+             x-transition:enter-start="opacity-0"
+             x-transition:enter-end="opacity-100"
+             x-transition:leave="transition ease-in duration-200"
+             x-transition:leave-start="opacity-100"
+             x-transition:leave-end="opacity-0"
+             class="fixed inset-0 z-[100] bg-black/50"
+             @click="$wire.closePaymentModal()">
+        </div>
+        
+        {{-- Modal Container --}}
+        <div x-show="show"
+             class="fixed inset-0 z-[100] flex items-center justify-center p-4 pointer-events-none">
+            
+            {{-- Modal Card --}}
+            <div x-show="show"
+                 x-transition:enter="transition ease-out duration-300"
+                 x-transition:enter-start="opacity-0 scale-95"
+                 x-transition:enter-end="opacity-100 scale-100"
+                 x-transition:leave="transition ease-in duration-200"
+                 x-transition:leave-start="opacity-100 scale-100"
+                 x-transition:leave-end="opacity-0 scale-95"
+                 @click.stop
+                 class="bg-white rounded-2xl w-full max-w-md shadow-2xl overflow-hidden max-h-[90vh] flex flex-col pointer-events-auto">
+                
+                {{-- Header (Fixed) --}}
+                <div class="relative px-6 pt-5 pb-4 flex-shrink-0">
+                    <button @click="$wire.closePaymentModal()" 
+                            class="absolute top-4 right-4 p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full transition-colors">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                        </svg>
+                    </button>
+                    <div class="text-center">
+                        <div class="w-12 h-12 bg-teal-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                            <svg class="w-6 h-6 text-teal-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"/>
                             </svg>
-                        </button>
+                        </div>
+                        <h3 class="text-xl font-bold text-gray-800">Pembayaran</h3>
+                        <p class="text-gray-500 text-sm mt-1">Selesaikan transaksi</p>
                     </div>
-                    <p class="text-teal-100 text-sm mt-1">Selesaikan transaksi Anda</p>
                 </div>
 
-                <div class="p-6 space-y-5">
-                    {{-- Order Summary --}}
-                    <div class="bg-gray-50 rounded-xl p-4">
-                        <div class="space-y-2 text-sm">
-                            <div class="flex justify-between text-gray-600">
-                                <span>Subtotal</span>
-                                <span>Rp {{ number_format($this->subtotal, 0, ',', '.') }}</span>
-                            </div>
-                            <div class="flex justify-between text-gray-600">
-                                <span>Pajak ({{ $taxPercentage }}%)</span>
-                                <span>Rp {{ number_format($this->tax, 0, ',', '.') }}</span>
-                            </div>
-                            @if($this->discountAmount > 0)
-                                <div class="flex justify-between text-teal-600 font-medium">
-                                    <span>Diskon {{ $discountType === 'percentage' ? '(' . $discountValue . '%)' : '' }}</span>
-                                    <span>-Rp {{ number_format($this->discountAmount, 0, ',', '.') }}</span>
-                                </div>
-                            @endif
-                            <div class="border-t border-gray-200 pt-2 mt-2">
-                                <div class="flex justify-between items-center">
-                                    <span class="font-semibold text-gray-800">Total Pembayaran</span>
-                                    <span class="text-2xl font-bold text-teal-600">Rp {{ number_format($this->total, 0, ',', '.') }}</span>
-                                </div>
-                            </div>
-                        </div>
+                {{-- Scrollable Content --}}
+                <div class="px-6 pb-4 space-y-4 overflow-y-auto flex-1">
+                    {{-- Total Amount - Prominent Display --}}
+                    <div class="bg-gradient-to-br from-teal-50 to-emerald-50 rounded-xl p-4 border border-teal-100">
+                        <p class="text-teal-700 text-sm font-medium text-center mb-1">Total Pembayaran</p>
+                        <p class="text-2xl sm:text-3xl font-bold text-teal-700 text-center">Rp {{ number_format($this->total, 0, ',', '.') }}</p>
+                        @if($this->discountAmount > 0)
+                            <p class="text-teal-600 text-xs text-center mt-1">Termasuk diskon Rp {{ number_format($this->discountAmount, 0, ',', '.') }}</p>
+                        @endif
                     </div>
 
                     {{-- Payment Method --}}
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Metode Pembayaran</label>
+                        <label class="block text-xs font-medium text-gray-500 mb-2 uppercase tracking-wide">Metode Pembayaran</label>
                         <div class="grid grid-cols-3 gap-2">
                             <button wire:click="$set('paymentMethod', 'cash')"
-                                class="py-3 px-4 rounded-xl font-medium text-sm transition-all flex flex-col items-center gap-1
-                                                                                                {{ $paymentMethod === 'cash' ? 'bg-teal-600 text-white ring-2 ring-teal-600 ring-offset-2' : 'bg-gray-100 text-gray-700 hover:bg-gray-200' }}">
-                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
+                                    class="py-2.5 px-2 sm:px-3 rounded-xl font-medium text-xs transition-all flex flex-col items-center gap-1
+                                    {{ $paymentMethod === 'cash' ? 'bg-teal-600 text-white shadow-lg shadow-teal-600/30' : 'bg-gray-50 text-gray-600 hover:bg-gray-100 border border-gray-200' }}">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"/>
                                 </svg>
                                 Cash
                             </button>
                             <button wire:click="$set('paymentMethod', 'qris')"
-                                class="py-3 px-4 rounded-xl font-medium text-sm transition-all flex flex-col items-center gap-1
-                                                                                                {{ $paymentMethod === 'qris' ? 'bg-teal-600 text-white ring-2 ring-teal-600 ring-offset-2' : 'bg-gray-100 text-gray-700 hover:bg-gray-200' }}">
-                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z" />
+                                    class="py-2.5 px-2 sm:px-3 rounded-xl font-medium text-xs transition-all flex flex-col items-center gap-1
+                                    {{ $paymentMethod === 'qris' ? 'bg-teal-600 text-white shadow-lg shadow-teal-600/30' : 'bg-gray-50 text-gray-600 hover:bg-gray-100 border border-gray-200' }}">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z"/>
                                 </svg>
                                 QRIS
                             </button>
                             <button wire:click="$set('paymentMethod', 'debit')"
-                                class="py-3 px-4 rounded-xl font-medium text-sm transition-all flex flex-col items-center gap-1
-                                                                                                {{ $paymentMethod === 'debit' ? 'bg-teal-600 text-white ring-2 ring-teal-600 ring-offset-2' : 'bg-gray-100 text-gray-700 hover:bg-gray-200' }}">
-                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+                                    class="py-2.5 px-2 sm:px-3 rounded-xl font-medium text-xs transition-all flex flex-col items-center gap-1
+                                    {{ $paymentMethod === 'debit' ? 'bg-teal-600 text-white shadow-lg shadow-teal-600/30' : 'bg-gray-50 text-gray-600 hover:bg-gray-100 border border-gray-200' }}">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/>
                                 </svg>
                                 Debit
                             </button>
@@ -126,68 +138,65 @@
 
                     {{-- Cash Input (only for cash) --}}
                     @if($paymentMethod === 'cash')
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Uang Diterima</label>
-                            <div class="relative">
-                                <span class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 font-medium">Rp</span>
-                                <input type="number" wire:model.live="amountReceived"
-                                    class="w-full pl-12 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-lg font-semibold focus:ring-2 focus:ring-teal-500 focus:border-transparent"
-                                    placeholder="0">
+                        <div class="space-y-3">
+                            <div>
+                                <label class="block text-xs font-medium text-gray-500 mb-1.5 uppercase tracking-wide">Uang Diterima</label>
+                                <div class="relative">
+                                    <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm font-medium">Rp</span>
+                                    <input type="number" wire:model.live="amountReceived"
+                                           class="w-full pl-10 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-base font-semibold focus:ring-2 focus:ring-teal-500 focus:border-transparent"
+                                           placeholder="0">
+                                </div>
                             </div>
-                            {{-- Quick Cash Buttons --}}
-                            <div class="grid grid-cols-4 gap-2 mt-3">
+                            
+                            {{-- Quick Cash Buttons - Responsive Grid --}}
+                            <div class="grid grid-cols-2 md:grid-cols-4 gap-2">
                                 <button wire:click="setQuickCash('exact')"
-                                    class="py-2 bg-teal-50 hover:bg-teal-100 text-teal-700 text-sm font-medium rounded-lg transition-colors">
-                                    Pas
+                                        class="py-2.5 bg-teal-50 hover:bg-teal-100 text-teal-700 text-xs font-semibold rounded-lg transition-colors border border-teal-200">
+                                    💵 Pas
                                 </button>
                                 <button wire:click="setQuickCash('50000')"
-                                    class="py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm font-medium rounded-lg transition-colors">
-                                    50K
+                                        class="py-2.5 bg-gray-50 hover:bg-gray-100 text-gray-600 text-xs font-medium rounded-lg transition-colors border border-gray-200">
+                                    Rp 50K
                                 </button>
                                 <button wire:click="setQuickCash('100000')"
-                                    class="py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm font-medium rounded-lg transition-colors">
-                                    100K
+                                        class="py-2.5 bg-gray-50 hover:bg-gray-100 text-gray-600 text-xs font-medium rounded-lg transition-colors border border-gray-200">
+                                    Rp 100K
                                 </button>
                                 <button wire:click="setQuickCash('200000')"
-                                    class="py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm font-medium rounded-lg transition-colors">
-                                    200K
+                                        class="py-2.5 bg-gray-50 hover:bg-gray-100 text-gray-600 text-xs font-medium rounded-lg transition-colors border border-gray-200">
+                                    Rp 200K
                                 </button>
                             </div>
-                        </div>
 
-                        {{-- Change Display --}}
-                        <div class="bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl p-4 border border-green-200">
-                            <div class="flex items-center justify-between">
-                                <span class="text-green-700 font-medium">Kembalian</span>
-                                <span class="text-2xl font-bold text-green-700">Rp
-                                    {{ number_format($this->change, 0, ',', '.') }}</span>
+                            {{-- Change Display --}}
+                            <div class="flex items-center justify-between p-3 bg-green-50 rounded-xl border border-green-200">
+                                <span class="text-green-700 text-sm font-medium">Kembalian</span>
+                                <span class="text-lg sm:text-xl font-bold text-green-700">Rp {{ number_format($this->change, 0, ',', '.') }}</span>
                             </div>
                         </div>
                     @endif
                 </div>
 
                 {{-- Footer --}}
-                <div class="px-6 py-4 bg-gray-50 border-t border-gray-100">
-                    <button wire:click="confirmPayment" wire:loading.attr="disabled" @if(!$this->canPay) disabled @endif
-                        class="w-full py-3.5 bg-gradient-to-r from-teal-600 to-teal-700 hover:from-teal-700 hover:to-teal-800 text-white font-semibold rounded-xl transition-all shadow-lg shadow-teal-600/30 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed">
-                        <svg wire:loading wire:target="confirmPayment" class="w-5 h-5 animate-spin" fill="none"
-                            viewBox="0 0 24 24">
-                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4">
-                            </circle>
-                            <path class="opacity-75" fill="currentColor"
-                                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
-                            </path>
+                <div class="px-6 pb-6 flex-shrink-0">
+                    <button wire:click="confirmPayment" 
+                            wire:loading.attr="disabled" 
+                            @if(!$this->canPay) disabled @endif
+                            class="w-full py-3 bg-gradient-to-r from-teal-600 to-teal-700 hover:from-teal-700 hover:to-teal-800 text-white font-semibold rounded-xl transition-all shadow-lg shadow-teal-600/30 flex items-center justify-center gap-2 disabled:from-gray-300 disabled:to-gray-400 disabled:shadow-none disabled:cursor-not-allowed">
+                        <svg wire:loading wire:target="confirmPayment" class="w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                         </svg>
-                        <svg wire:loading.remove wire:target="confirmPayment" class="w-5 h-5" fill="none"
-                            stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                        <svg wire:loading.remove wire:target="confirmPayment" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
                         </svg>
-                        <span>Konfirmasi Pembayaran & Cetak</span>
+                        <span>Konfirmasi & Cetak Struk</span>
                     </button>
                 </div>
             </div>
         </div>
-    @endif
+    </div>
 
     {{-- Mobile Cart Button --}}
     <button x-on:click="cartOpen = true"

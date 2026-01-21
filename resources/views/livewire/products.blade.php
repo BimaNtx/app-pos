@@ -306,14 +306,20 @@
         document.addEventListener('livewire:init', () => {
             Livewire.on('product-saved', (data) => {
                 const params = data[0];
-                const isCreated = params.type === 'created';
+                
+                let message = '';
+                if (params.type === 'created') {
+                    message = `Menu baru "${params.name}" telah ditambahkan.`;
+                } else if (params.type === 'updated') {
+                    message = `Menu "${params.name}" telah diperbarui.`;
+                } else if (params.type === 'deleted') {
+                    message = `Menu "${params.name}" telah dihapus.`;
+                }
 
                 Swal.fire({
                     icon: 'success',
                     title: 'Berhasil!',
-                    text: isCreated
-                        ? `Menu baru "${params.name}" telah ditambahkan.`
-                        : `Menu "${params.name}" telah diperbarui.`,
+                    text: message,
                     confirmButtonText: 'OK',
                     confirmButtonColor: '#0d9488',
                     timer: 3000,

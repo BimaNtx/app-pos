@@ -4,6 +4,7 @@ namespace App\Livewire;
 
 use App\Models\Category;
 use Livewire\Attributes\Layout;
+use Livewire\Attributes\On;
 use Livewire\Attributes\Rule;
 use Livewire\Component;
 use Livewire\WithPagination;
@@ -33,6 +34,16 @@ class Categories extends Component
 
     #[Rule('required')]
     public string $selectedBg = 'bg-gray-100';
+
+    /**
+     * Listen for product changes to update category counts
+     */
+    #[On('product-saved')]
+    public function refreshCategoryCounts(): void
+    {
+        // This method triggers a component refresh
+        // The render() method will re-query with withCount
+    }
 
     public function updatingSearch(): void
     {
