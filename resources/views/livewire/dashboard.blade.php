@@ -14,7 +14,8 @@
                     <div>
                         <p class="text-gray-500 text-sm font-medium">Penjualan Hari Ini</p>
                         <p class="text-3xl font-bold text-gray-800 mt-1">Rp
-                            {{ number_format($this->todaySales, 0, ',', '.') }}</p>
+                            {{ number_format($this->todaySales, 0, ',', '.') }}
+                        </p>
                     </div>
                     <div class="w-14 h-14 bg-teal-100 rounded-2xl flex items-center justify-center">
                         <svg class="w-7 h-7 text-teal-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -60,7 +61,8 @@
                     <div class="flex-1 min-w-0">
                         <p class="text-gray-500 text-sm font-medium">Terlaris Hari Ini</p>
                         @if($this->bestSeller)
-                            <p class="text-xl font-bold text-gray-800 mt-1 truncate" title="{{ $this->bestSeller['name'] }}">{{ $this->bestSeller['name'] }}</p>
+                            <p class="text-xl font-bold text-gray-800 mt-1 truncate"
+                                title="{{ $this->bestSeller['name'] }}">{{ $this->bestSeller['name'] }}</p>
                             <p class="text-teal-600 font-medium text-sm">{{ $this->bestSeller['qty'] }} terjual</p>
                         @else
                             <p class="text-xl font-bold text-gray-400 mt-1">Belum ada penjualan</p>
@@ -84,10 +86,23 @@
                     $maxSale = max(array_column($this->weeklySales, 'total')) ?: 1;
                 @endphp
                 @foreach($this->weeklySales as $day)
-                    <div class="flex-1 flex flex-col items-center gap-2">
-                        <div class="w-full bg-gray-100 rounded-t-lg relative" style="height: 160px;">
-                            <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-teal-600 to-teal-400 rounded-t-lg transition-all duration-500"
+                    <div class="flex-1 flex flex-col items-center gap-2 group relative">
+                        <div class="w-full bg-gray-100 rounded-t-lg relative cursor-pointer" style="height: 160px;">
+                            <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-teal-600 to-teal-400 rounded-t-lg transition-all duration-500 group-hover:from-teal-700 group-hover:to-teal-500"
                                 style="height: {{ $maxSale > 0 ? ($day['total'] / $maxSale) * 100 : 0 }}%;">
+                            </div>
+                            {{-- Tooltip --}}
+                            <div
+                                class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-2 bg-white text-gray-800 text-xs font-medium rounded-lg shadow-xl border border-gray-200 opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-10">
+                                <div class="text-center">
+                                    <p class="font-semibold text-gray-800">{{ $day['date'] }}</p>
+                                    <p class="text-teal-600 font-bold">Rp {{ number_format($day['total'], 0, ',', '.') }}
+                                    </p>
+                                </div>
+                                {{-- Tooltip arrow --}}
+                                <div class="absolute top-full left-1/2 -translate-x-1/2 -mt-1">
+                                    <div class="border-4 border-transparent border-t-white"></div>
+                                </div>
                             </div>
                         </div>
                         <span class="text-xs text-gray-500 font-medium">{{ $day['date'] }}</span>
@@ -127,7 +142,8 @@
                                 <td class="px-6 py-4 text-gray-800">{{ $transaction->customer_name }}</td>
                                 <td class="px-6 py-4 text-gray-500">{{ $transaction->details->sum('quantity') }} item</td>
                                 <td class="px-6 py-4 font-semibold text-gray-800">Rp
-                                    {{ number_format($transaction->total_amount, 0, ',', '.') }}</td>
+                                    {{ number_format($transaction->total_amount, 0, ',', '.') }}
+                                </td>
                                 <td class="px-6 py-4 text-gray-500 text-sm">{{ $transaction->created_at->diffForHumans() }}
                                 </td>
                             </tr>
