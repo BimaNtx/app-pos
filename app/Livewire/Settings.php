@@ -23,10 +23,10 @@ class Settings extends Component
 
     #[Rule('required|min:2')]
     public string $restaurantName = 'Kasir App';
-    
+
     #[Rule('nullable|max:255')]
     public string $restaurantAddress = '';
-    
+
     #[Rule('required|numeric|min:0|max:100')]
     public float $taxPercentage = 10;
 
@@ -52,7 +52,7 @@ class Settings extends Component
     {
         // Load settings from a simple JSON file
         $settingsPath = storage_path('app/settings.json');
-        
+
         if (File::exists($settingsPath)) {
             $settings = json_decode(File::get($settingsPath), true);
             $this->restaurantName = $settings['restaurant_name'] ?? 'Kasir App';
@@ -102,14 +102,14 @@ class Settings extends Component
     public function resetData(): void
     {
         $this->disableForeignKeyChecks();
-        
+
         TransactionDetail::truncate();
         Transaction::truncate();
         Product::truncate();
         Category::truncate();
         Expense::truncate();
         Logistic::truncate();
-        
+
         $this->enableForeignKeyChecks();
 
         $this->dispatch('data-reset');
@@ -156,7 +156,7 @@ class Settings extends Component
             }
 
             $this->disableForeignKeyChecks();
-            
+
             // Clear existing data
             TransactionDetail::truncate();
             Transaction::truncate();
@@ -166,14 +166,31 @@ class Settings extends Component
             Logistic::truncate();
 
             // Restore data
+            // Create mapping from old category IDs to new category IDs
+            $categoryIdMap = [];
+
             if (!empty($backup['data']['categories'])) {
                 foreach ($backup['data']['categories'] as $item) {
-                    Category::create($item);
+                    $oldId = $item['id'] ?? null;
+                    unset($item['id']); // Let DB generate new ID
+                    unset($item['created_at']);
+                    unset($item['updated_at']);
+                    $newCategory = Category::create($item);
+                    if ($oldId) {
+                        $categoryIdMap[$oldId] = $newCategory->id;
+                    }
                 }
             }
 
             if (!empty($backup['data']['products'])) {
                 foreach ($backup['data']['products'] as $item) {
+                    // Map old category_id to new category_id
+                    if (isset($item['category_id']) && isset($categoryIdMap[$item['category_id']])) {
+                        $item['category_id'] = $categoryIdMap[$item['category_id']];
+                    }
+                    unset($item['id']);
+                    unset($item['created_at']);
+                    unset($item['updated_at']);
                     Product::create($item);
                 }
             }
@@ -181,13 +198,13 @@ class Settings extends Component
             if (!empty($backup['data']['transactions'])) {
                 foreach ($backup['data']['transactions'] as $item) {
                     // Parse timestamps strictly with proper format
-                    $createdAt = isset($item['created_at']) 
+                    $createdAt = isset($item['created_at'])
                         ? \Carbon\Carbon::parse($item['created_at'])->format('Y-m-d H:i:s')
                         : now()->format('Y-m-d H:i:s');
-                    $updatedAt = isset($item['updated_at']) 
+                    $updatedAt = isset($item['updated_at'])
                         ? \Carbon\Carbon::parse($item['updated_at'])->format('Y-m-d H:i:s')
                         : now()->format('Y-m-d H:i:s');
-                    
+
                     // Use DB insert for strict control
                     DB::table('transactions')->insert([
                         'id' => $item['id'] ?? null,
@@ -216,35 +233,37 @@ class Settings extends Component
 
             if (!empty($backup['data']['expenses'])) {
                 foreach ($backup['data']['expenses'] as $item) {
-                    // Parse date strictly - handle ISO8601, Y-m-d, and other formats
+                    // Parse date strictly with timezone awareness
                     $rawDate = $item['date'] ?? null;
                     if ($rawDate) {
                         try {
-                            // Parse and convert to local timezone, then format as Y-m-d
-                            $parsedDate = \Carbon\Carbon::parse($rawDate)->format('Y-m-d');
+                            // Parse with local timezone to prevent date shifting
+                            $parsedDate = \Carbon\Carbon::parse($rawDate)
+                                ->setTimezone(config('app.timezone'))
+                                ->format('Y-m-d');
                         } catch (\Exception $e) {
                             $parsedDate = now()->format('Y-m-d');
                         }
                     } else {
                         $parsedDate = now()->format('Y-m-d');
                     }
-                    
+
                     // Ensure amount is a positive numeric value (using abs to handle negative strings)
                     $rawAmount = $item['amount'] ?? 0;
                     $amount = abs((float) preg_replace('/[^0-9.\-]/', '', (string) $rawAmount));
-                    
+
                     // Handle created_by - use current auth user if original user doesn't exist
                     $createdBy = $item['created_by'] ?? null;
                     if ($createdBy && !\App\Models\User::find($createdBy)) {
                         $createdBy = auth()->id() ?? 1;
                     }
                     $createdBy = $createdBy ?? auth()->id() ?? 1;
-                    
+
                     // Parse timestamps
-                    $createdAt = isset($item['created_at']) 
+                    $createdAt = isset($item['created_at'])
                         ? \Carbon\Carbon::parse($item['created_at'])->format('Y-m-d H:i:s')
                         : now()->format('Y-m-d H:i:s');
-                    $updatedAt = isset($item['updated_at']) 
+                    $updatedAt = isset($item['updated_at'])
                         ? \Carbon\Carbon::parse($item['updated_at'])->format('Y-m-d H:i:s')
                         : now()->format('Y-m-d H:i:s');
 
@@ -284,7 +303,7 @@ class Settings extends Component
     protected function disableForeignKeyChecks(): void
     {
         $driver = DB::connection()->getDriverName();
-        
+
         if ($driver === 'sqlite') {
             DB::statement('PRAGMA foreign_keys = OFF');
         } elseif ($driver === 'mysql') {
@@ -298,7 +317,7 @@ class Settings extends Component
     protected function enableForeignKeyChecks(): void
     {
         $driver = DB::connection()->getDriverName();
-        
+
         if ($driver === 'sqlite') {
             DB::statement('PRAGMA foreign_keys = ON');
         } elseif ($driver === 'mysql') {
