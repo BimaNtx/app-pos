@@ -4,6 +4,7 @@ namespace App\Livewire;
 
 use App\Models\Transaction;
 use App\Models\TransactionDetail;
+use Illuminate\Support\Facades\File;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
 use Livewire\WithPagination;
@@ -30,6 +31,9 @@ class Transactions extends Component
     // Edit form data
     public string $editCustomerName = '';
     public array $editItems = [];
+
+    // Tax Settings (loaded from settings.json)
+    public float $taxPercentage = 10;
 
     public function updatingSearch(): void
     {
@@ -117,8 +121,8 @@ class Transactions extends Component
         $subtotal = collect($this->editItems)->sum(function ($item) {
             return $item['quantity'] * $item['price_at_time'];
         });
-        // Apply 11% tax
-        return $subtotal * 1.11;
+        // Apply tax percentage from settings
+        return $subtotal * (1 + $this->taxPercentage / 100);
     }
 
     /**
@@ -152,12 +156,12 @@ class Transactions extends Component
             }
         }
 
-        // Recalculate total
+        // Recalculate total with tax from settings
         $subtotal = $this->selectedTransaction->details()->get()->sum(function ($detail) {
             return $detail->quantity * $detail->price_at_time;
         });
         $this->selectedTransaction->update([
-            'total_amount' => $subtotal * 1.11,
+            'total_amount' => $subtotal * (1 + $this->taxPercentage / 100),
         ]);
 
         $this->closeModals();
@@ -214,6 +218,13 @@ class Transactions extends Component
 
     public function render()
     {
+        // Load tax percentage from settings
+        $settingsPath = storage_path('app/settings.json');
+        if (File::exists($settingsPath)) {
+            $settings = json_decode(File::get($settingsPath), true);
+            $this->taxPercentage = $settings['tax_percentage'] ?? 10;
+        }
+
         $transactions = Transaction::with('details.product')
             ->when($this->search, function ($query) {
                 $query->where('transaction_code', 'like', '%' . $this->search . '%')
@@ -227,6 +238,7 @@ class Transactions extends Component
 
         return view('livewire.transactions', [
             'transactions' => $transactions,
+            'taxPercentage' => $this->taxPercentage,
         ]);
     }
 }

@@ -214,7 +214,7 @@
                             <span class="text-gray-700">Rp {{ number_format($subtotal, 0, ',', '.') }}</span>
                         </div>
                         <div class="flex justify-between text-sm">
-                            <span class="text-gray-500">Pajak (11%)</span>
+                            <span class="text-gray-500">Pajak ({{ $taxPercentage }}%)</span>
                             <span class="text-gray-700">Rp {{ number_format($tax, 0, ',', '.') }}</span>
                         </div>
                         <div class="flex justify-between text-lg font-bold pt-2 border-t border-gray-200">
@@ -312,7 +312,7 @@
                     {{-- Total Preview --}}
                     @php
                         $editSubtotal = collect($editItems)->sum(fn($item) => $item['quantity'] * $item['price_at_time']);
-                        $editTax = $editSubtotal * 0.11;
+                        $editTax = $editSubtotal * ($taxPercentage / 100);
                         $editTotal = $editSubtotal + $editTax;
                     @endphp
                     <div class="border-t border-gray-100 pt-4 mt-4 space-y-2">
@@ -321,7 +321,7 @@
                             <span class="text-gray-700">Rp {{ number_format($editSubtotal, 0, ',', '.') }}</span>
                         </div>
                         <div class="flex justify-between text-sm">
-                            <span class="text-gray-500">Pajak (11%)</span>
+                            <span class="text-gray-500">Pajak ({{ $taxPercentage }}%)</span>
                             <span class="text-gray-700">Rp {{ number_format($editTax, 0, ',', '.') }}</span>
                         </div>
                         <div class="flex justify-between text-lg font-bold pt-2 border-t border-gray-200">
