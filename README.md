@@ -271,11 +271,11 @@ Jika Anda telah membuat user admin:
 
 | Dashboard | POS Page |
 |-----------|----------|
-| ![Dashboard](#) | ![POS](#) |
+| ![Dashboard](screenshots/Dashboard.png) | ![POS](screenshots/POS.png) |
 
 | Products | Transactions |
 |----------|--------------|
-| ![Products](#) | ![Transactions](#) |
+| ![Management Menu](screenshots/Management-Menu.png) | ![Transactions](screenshots/Transactions.png) |
 
 ---
 
