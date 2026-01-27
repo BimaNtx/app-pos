@@ -267,6 +267,22 @@
     <!-- Livewire Scripts -->
     @livewireScripts
 
+    <script>
+        // Global listener for duplicate name error
+        document.addEventListener('livewire:init', () => {
+            Livewire.on('show-duplicate-error', (event) => {
+                const data = event[0] || event;
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Duplikat!',
+                    text: data.message || 'Item ini sudah tersedia!',
+                    confirmButtonColor: '#0d9488',
+                    confirmButtonText: 'OK'
+                });
+            });
+        });
+    </script>
+
     @stack('scripts')
 </body>
 

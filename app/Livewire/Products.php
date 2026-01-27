@@ -102,6 +102,18 @@ class Products extends Component
             'description' => 'nullable|max:500',
         ]);
 
+        // Check for duplicate name (case-insensitive)
+        $existingProduct = Product::whereRaw('LOWER(name) = ?', [strtolower($this->name)])
+            ->when($this->editingId, fn($q) => $q->where('id', '!=', $this->editingId))
+            ->first();
+
+        if ($existingProduct) {
+            $this->dispatch('show-duplicate-error', [
+                'message' => 'Menu ini sudah tersedia!',
+            ]);
+            return;
+        }
+
         // Handle image upload - store relative path only
         $imageUrl = $this->existing_image_url;
         if ($this->image) {
