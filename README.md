@@ -275,7 +275,7 @@ Jika Anda telah membuat user admin:
 
 | Products | Transactions |
 |----------|--------------|
-| ![Management Menu](screenshots/Management-Menu.png) | ![Transactions](screenshots/Transactions.png) |
+| ![Management Menu](screenshots/Manajemen-Menu.png) | ![Transactions](screenshots/Transaksi.png) |
 
 ---
 
