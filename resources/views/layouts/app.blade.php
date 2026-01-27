@@ -232,28 +232,25 @@
 
             {{-- User Section --}}
             <div class="p-2.5 border-t border-teal-600/50 flex-shrink-0">
-                <div class="flex items-center gap-3 px-2 py-1.5 text-teal-100 rounded-xl">
-                    <div
-                        class="w-9 h-9 bg-teal-500 rounded-full flex items-center justify-center text-white font-semibold flex-shrink-0">
+                <button type="button" 
+                    onclick="Livewire.dispatch('open-profile-modal')"
+                    class="w-full flex items-center gap-3 px-2 py-1.5 text-teal-100 rounded-xl hover:bg-white/10 transition-colors cursor-pointer">
+                    <div class="w-9 h-9 bg-teal-500 rounded-full flex items-center justify-center text-white font-semibold flex-shrink-0">
                         {{ substr(Auth::user()->name ?? 'A', 0, 1) }}
                     </div>
-                    <div class="flex-1 min-w-0">
+                    <div class="flex-1 min-w-0 text-left">
                         <p class="text-white font-medium text-sm truncate">{{ Auth::user()->name ?? 'Admin' }}</p>
                         <p class="text-teal-300 text-xs truncate">{{ Auth::user()->email ?? 'admin@kasir.app' }}</p>
                     </div>
-                    <form method="POST" action="{{ route('logout') }}">
-                        @csrf
-                        <button type="submit" class="p-2 rounded-lg hover:bg-white/10 transition-colors" title="Keluar">
-                            <svg class="w-5 h-5 text-teal-300 hover:text-white" fill="none" stroke="currentColor"
-                                viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-                            </svg>
-                        </button>
-                    </form>
-                </div>
+                    <svg class="w-5 h-5 text-teal-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                    </svg>
+                </button>
             </div>
         </aside>
+
+        {{-- Profile Modal Component --}}
+        @livewire('profile')
 
         {{-- Main Content --}}
         <div class="flex-1 flex flex-col h-full overflow-y-auto pt-14 lg:pt-0">
