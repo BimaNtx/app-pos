@@ -84,6 +84,18 @@ class Categories extends Component
     {
         $this->validate();
 
+        // Check for duplicate name (case-insensitive)
+        $existingCategory = Category::whereRaw('LOWER(name) = ?', [strtolower($this->name)])
+            ->when($this->editingId, fn($q) => $q->where('id', '!=', $this->editingId))
+            ->first();
+
+        if ($existingCategory) {
+            $this->dispatch('show-duplicate-error', [
+                'message' => 'Kategori ini sudah tersedia!',
+            ]);
+            return;
+        }
+
         $data = [
             'name' => $this->name,
             'icon' => $this->icon,

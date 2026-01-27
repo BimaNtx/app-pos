@@ -80,6 +80,18 @@ class Logistics extends Component
     {
         $this->validate();
 
+        // Check for duplicate name (case-insensitive)
+        $existingItem = Logistic::whereRaw('LOWER(name) = ?', [strtolower($this->name)])
+            ->when($this->selected_id, fn($q) => $q->where('id', '!=', $this->selected_id))
+            ->first();
+
+        if ($existingItem) {
+            $this->dispatch('show-duplicate-error', [
+                'message' => 'Barang ini sudah tersedia!',
+            ]);
+            return;
+        }
+
         Logistic::updateOrCreate(['id' => $this->selected_id], [
             'name' => $this->name,
             'unit' => $this->unit,
