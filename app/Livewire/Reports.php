@@ -37,31 +37,45 @@ class Reports extends Component
     public function totalSales(): float
     {
         [$start, $end] = $this->dateRange;
-        return Transaction::whereBetween('created_at', [$start, $end])->sum('total_amount');
+        
+        // Exclude soft-deleted transactions
+        return Transaction::whereNull('deleted_at')
+            ->whereBetween('created_at', [$start, $end])
+            ->sum('total_amount') ?? 0;
     }
 
     #[Computed]
     public function totalTransactions(): int
     {
         [$start, $end] = $this->dateRange;
-        return Transaction::whereBetween('created_at', [$start, $end])->count();
+        
+        // Exclude soft-deleted transactions
+        return Transaction::whereNull('deleted_at')
+            ->whereBetween('created_at', [$start, $end])
+            ->count();
     }
 
     #[Computed]
     public function averageOrder(): float
     {
-        if ($this->totalTransactions === 0)
+        $totalTransactions = $this->totalTransactions;
+        
+        // Handle division by zero
+        if ($totalTransactions === 0) {
             return 0;
-        return $this->totalSales / $this->totalTransactions;
+        }
+        
+        return $this->totalSales / $totalTransactions;
     }
 
     #[Computed]
     public function totalExpenses(): float
     {
         [$start, $end] = $this->dateRange;
+        
         return Expense::whereDate('date', '>=', $start->toDateString())
             ->whereDate('date', '<=', $end->toDateString())
-            ->sum('amount');
+            ->sum('amount') ?? 0;
     }
 
     #[Computed]
@@ -79,7 +93,7 @@ class Reports extends Component
             ->whereDate('date', '>=', $start->toDateString())
             ->whereDate('date', '<=', $end->toDateString())
             ->select(
-                'category',
+                DB::raw("COALESCE(category, 'Lainnya') as category"),
                 DB::raw('SUM(amount) as total_amount')
             )
             ->groupBy('category')
@@ -94,15 +108,19 @@ class Reports extends Component
 
         return TransactionDetail::query()
             ->join('transactions', 'transaction_details.transaction_id', '=', 'transactions.id')
-            ->join('products', 'transaction_details.product_id', '=', 'products.id')
+            // Use LEFT JOIN to include products that may have been deleted
+            ->leftJoin('products', 'transaction_details.product_id', '=', 'products.id')
             ->whereBetween('transactions.created_at', [$start, $end])
+            // CRITICAL: Exclude soft-deleted transactions
+            ->whereNull('transactions.deleted_at')
             ->select(
-                'products.name',
-                'products.category',
+                // Handle null product names (deleted products)
+                DB::raw("COALESCE(products.name, 'Produk Tidak Ditemukan') as name"),
+                DB::raw("COALESCE(products.category, 'Tanpa Kategori') as category"),
                 DB::raw('SUM(transaction_details.quantity) as total_qty'),
                 DB::raw('SUM(transaction_details.quantity * transaction_details.price_at_time) as total_revenue')
             )
-            ->groupBy('products.id', 'products.name', 'products.category')
+            ->groupBy('transaction_details.product_id', 'products.name', 'products.category')
             ->orderByDesc('total_qty')
             ->take(10)
             ->get();
@@ -115,14 +133,42 @@ class Reports extends Component
 
         return TransactionDetail::query()
             ->join('transactions', 'transaction_details.transaction_id', '=', 'transactions.id')
-            ->join('products', 'transaction_details.product_id', '=', 'products.id')
+            // Use LEFT JOIN to include products that may have been deleted
+            ->leftJoin('products', 'transaction_details.product_id', '=', 'products.id')
             ->whereBetween('transactions.created_at', [$start, $end])
+            // CRITICAL: Exclude soft-deleted transactions
+            ->whereNull('transactions.deleted_at')
             ->select(
-                'products.category',
+                // Handle null categories
+                DB::raw("COALESCE(products.category, 'Tanpa Kategori') as category"),
                 DB::raw('SUM(transaction_details.quantity * transaction_details.price_at_time) as total_revenue')
             )
-            ->groupBy('products.category')
+            ->groupBy(DB::raw("COALESCE(products.category, 'Tanpa Kategori')"))
+            ->orderByDesc('total_revenue')
             ->get();
+    }
+
+    /**
+     * Get total revenue percentage by category for chart display
+     */
+    #[Computed]
+    public function categoryPercentages(): array
+    {
+        $salesByCategory = $this->salesByCategory;
+        $totalRevenue = $salesByCategory->sum('total_revenue');
+        
+        // Handle division by zero
+        if ($totalRevenue == 0) {
+            return [];
+        }
+        
+        return $salesByCategory->map(function ($item) use ($totalRevenue) {
+            return [
+                'category' => $item->category,
+                'total_revenue' => $item->total_revenue,
+                'percentage' => round(($item->total_revenue / $totalRevenue) * 100, 1),
+            ];
+        })->toArray();
     }
 
     public function render()
@@ -132,4 +178,3 @@ class Reports extends Component
         ]);
     }
 }
-
