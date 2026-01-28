@@ -194,10 +194,9 @@ class Transactions extends Component
         if ($this->deletingId) {
             $transaction = Transaction::find($this->deletingId);
             if ($transaction) {
-                // Delete related details first
-                $transaction->details()->delete();
+                // Soft delete - transaction details are preserved for auditing
                 $transaction->delete();
-                session()->flash('message', 'Transaksi berhasil dihapus!');
+                session()->flash('message', 'Transaksi berhasil dihapus (soft delete)!');
             }
         }
         $this->showDeleteModal = false;
