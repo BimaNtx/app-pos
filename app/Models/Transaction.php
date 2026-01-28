@@ -23,6 +23,8 @@ class Transaction extends Model
         'discount_type',
         'discount_value',
         'discount_amount',
+        'tax_percentage',
+        'tax_amount',
         'total_amount',
         'amount_received',
         'change_amount',
@@ -37,6 +39,8 @@ class Transaction extends Model
         'total_amount' => 'decimal:2',
         'discount_value' => 'decimal:2',
         'discount_amount' => 'decimal:2',
+        'tax_percentage' => 'decimal:2',
+        'tax_amount' => 'decimal:2',
         'amount_received' => 'decimal:2',
         'change_amount' => 'decimal:2',
     ];
@@ -57,7 +61,7 @@ class Transaction extends Model
         $prefix = 'TRX';
         $date = now()->format('Ymd');
         $random = strtoupper(substr(uniqid(), -5));
-        
+
         return "{$prefix}-{$date}-{$random}";
     }
 }
