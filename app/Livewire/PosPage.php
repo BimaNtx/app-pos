@@ -70,10 +70,10 @@ class PosPage extends Component
         if (File::exists($settingsPath)) {
             $settings = json_decode(File::get($settingsPath), true);
             $this->taxPercentage = $settings['tax_percentage'] ?? 10;
-            
+
             // Only set discount if the discount feature is enabled
             $discountEnabled = $settings['discount_enabled'] ?? true;
-            
+
             if ($discountEnabled) {
                 $defaultDiscount = $settings['discount_percentage'] ?? 0;
                 $this->discountMinItems = $settings['discount_min_items'] ?? 1;
@@ -302,7 +302,8 @@ class PosPage extends Component
         }
 
         $value = (float) ($this->discountValue ?: 0);
-        if ($value <= 0) return 0;
+        if ($value <= 0)
+            return 0;
 
         if ($this->discountType === 'percentage') {
             // Percentage discount (max 100%)
@@ -358,6 +359,8 @@ class PosPage extends Component
                 'discount_type' => $this->discountAmount > 0 ? $this->discountType : null,
                 'discount_value' => $this->discountValue ?: 0,
                 'discount_amount' => $this->discountAmount,
+                'tax_percentage' => $this->taxPercentage,
+                'tax_amount' => $this->tax,
                 'total_amount' => $this->total,
                 'amount_received' => $this->paymentMethod === 'cash' ? $this->amountReceived : $this->total,
                 'change_amount' => $this->paymentMethod === 'cash' ? $this->change : 0,
@@ -385,7 +388,7 @@ class PosPage extends Component
     {
         // Clear session data after successful transaction
         $this->clearPosSession();
-        
+
         $this->cart = [];
         $this->customerName = '';
         $this->tableNumber = '';

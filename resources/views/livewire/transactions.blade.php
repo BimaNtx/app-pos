@@ -196,7 +196,8 @@
                 <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
 
                 {{-- Modal Content --}}
-                <div class="relative inline-block px-4 pt-5 pb-4 overflow-hidden text-left align-bottom transition-all transform bg-white rounded-2xl shadow-xl sm:my-8 sm:align-middle sm:max-w-lg sm:w-full sm:p-6">
+                <div
+                    class="relative inline-block px-4 pt-5 pb-4 overflow-hidden text-left align-bottom transition-all transform bg-white rounded-2xl shadow-xl sm:my-8 sm:align-middle sm:max-w-lg sm:w-full sm:p-6">
                     {{-- Header --}}
                     <div class="flex items-center justify-between pb-4 border-b border-gray-100">
                         <div>
@@ -205,7 +206,8 @@
                         </div>
                         <button wire:click="closeModals" class="text-gray-400 hover:text-gray-600">
                             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M6 18L18 6M6 6l12 12" />
                             </svg>
                         </button>
                     </div>
@@ -218,7 +220,8 @@
                         </div>
                         <div class="flex justify-between text-sm">
                             <span class="text-gray-500">Tanggal</span>
-                            <span class="font-medium text-gray-900">{{ $selectedTransaction->created_at->format('d M Y, H:i') }}</span>
+                            <span
+                                class="font-medium text-gray-900">{{ $selectedTransaction->created_at->format('d M Y, H:i') }}</span>
                         </div>
                     </div>
 
@@ -229,10 +232,13 @@
                             @foreach($selectedTransaction->details as $detail)
                                 <div class="flex justify-between items-center py-2 px-3 bg-gray-50 rounded-lg">
                                     <div>
-                                        <p class="font-medium text-gray-800">{{ $detail->product->name ?? 'Produk tidak ditemukan' }}</p>
-                                        <p class="text-xs text-gray-500">{{ $detail->quantity }} x Rp {{ number_format($detail->price_at_time, 0, ',', '.') }}</p>
+                                        <p class="font-medium text-gray-800">
+                                            {{ $detail->product->name ?? 'Produk tidak ditemukan' }}</p>
+                                        <p class="text-xs text-gray-500">{{ $detail->quantity }} x Rp
+                                            {{ number_format($detail->price_at_time, 0, ',', '.') }}</p>
                                     </div>
-                                    <span class="font-semibold text-gray-800">Rp {{ number_format($detail->quantity * $detail->price_at_time, 0, ',', '.') }}</span>
+                                    <span class="font-semibold text-gray-800">Rp
+                                        {{ number_format($detail->quantity * $detail->price_at_time, 0, ',', '.') }}</span>
                                 </div>
                             @endforeach
                         </div>
@@ -241,7 +247,9 @@
                     {{-- Total --}}
                     @php
                         $subtotal = $selectedTransaction->details->sum(fn($d) => $d->price_at_time * $d->quantity);
-                        $tax = $selectedTransaction->total_amount - $subtotal;
+                        // Use stored tax amount if available, otherwise calculate from total
+                        $storedTaxPercent = $selectedTransaction->tax_percentage ?? $taxPercentage;
+                        $storedTaxAmount = $selectedTransaction->tax_amount ?? ($selectedTransaction->total_amount - $subtotal);
                     @endphp
                     <div class="border-t border-gray-100 pt-4 mt-4 space-y-2">
                         <div class="flex justify-between text-sm">
@@ -249,12 +257,13 @@
                             <span class="text-gray-700">Rp {{ number_format($subtotal, 0, ',', '.') }}</span>
                         </div>
                         <div class="flex justify-between text-sm">
-                            <span class="text-gray-500">Pajak ({{ $taxPercentage }}%)</span>
-                            <span class="text-gray-700">Rp {{ number_format($tax, 0, ',', '.') }}</span>
+                            <span class="text-gray-500">Pajak ({{ number_format($storedTaxPercent, 0) }}%)</span>
+                            <span class="text-gray-700">Rp {{ number_format($storedTaxAmount, 0, ',', '.') }}</span>
                         </div>
                         <div class="flex justify-between text-lg font-bold pt-2 border-t border-gray-200">
                             <span>Total</span>
-                            <span class="text-teal-600">Rp {{ number_format($selectedTransaction->total_amount, 0, ',', '.') }}</span>
+                            <span class="text-teal-600">Rp
+                                {{ number_format($selectedTransaction->total_amount, 0, ',', '.') }}</span>
                         </div>
                     </div>
 
@@ -284,7 +293,8 @@
                 <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
 
                 {{-- Modal Content --}}
-                <div class="relative inline-block px-4 pt-5 pb-4 overflow-hidden text-left align-bottom transition-all transform bg-white rounded-2xl shadow-xl sm:my-8 sm:align-middle sm:max-w-lg sm:w-full sm:p-6">
+                <div
+                    class="relative inline-block px-4 pt-5 pb-4 overflow-hidden text-left align-bottom transition-all transform bg-white rounded-2xl shadow-xl sm:my-8 sm:align-middle sm:max-w-lg sm:w-full sm:p-6">
                     {{-- Header --}}
                     <div class="flex items-center justify-between pb-4 border-b border-gray-100">
                         <div>
@@ -293,7 +303,8 @@
                         </div>
                         <button wire:click="closeModals" class="text-gray-400 hover:text-gray-600">
                             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M6 18L18 6M6 6l12 12" />
                             </svg>
                         </button>
                     </div>
@@ -310,24 +321,28 @@
                         <h4 class="text-sm font-medium text-gray-700 mb-3">Item Pesanan</h4>
                         <div class="space-y-3 max-h-48 overflow-y-auto">
                             @foreach($editItems as $index => $item)
-                                <div class="flex items-center gap-3 py-2 px-3 bg-gray-50 rounded-lg" wire:key="edit-item-{{ $index }}">
+                                <div class="flex items-center gap-3 py-2 px-3 bg-gray-50 rounded-lg"
+                                    wire:key="edit-item-{{ $index }}">
                                     <div class="flex-1">
                                         <p class="font-medium text-gray-800 text-sm">{{ $item['product_name'] }}</p>
-                                        <p class="text-xs text-gray-500">Rp {{ number_format($item['price_at_time'], 0, ',', '.') }}/item</p>
+                                        <p class="text-xs text-gray-500">Rp
+                                            {{ number_format($item['price_at_time'], 0, ',', '.') }}/item</p>
                                     </div>
                                     <div class="flex items-center gap-2">
                                         <button wire:click="updateItemQuantity({{ $index }}, {{ $item['quantity'] - 1 }})"
                                             class="w-8 h-8 flex items-center justify-center bg-gray-200 hover:bg-gray-300 rounded-lg transition-colors"
                                             {{ $item['quantity'] <= 1 ? 'disabled' : '' }}>
                                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4" />
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                    d="M20 12H4" />
                                             </svg>
                                         </button>
                                         <span class="w-8 text-center font-semibold">{{ $item['quantity'] }}</span>
                                         <button wire:click="updateItemQuantity({{ $index }}, {{ $item['quantity'] + 1 }})"
                                             class="w-8 h-8 flex items-center justify-center bg-gray-200 hover:bg-gray-300 rounded-lg transition-colors">
                                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                    d="M12 4v16m8-8H4" />
                                             </svg>
                                         </button>
                                     </div>
@@ -335,7 +350,8 @@
                                         <button wire:click="removeItem({{ $index }})"
                                             class="w-8 h-8 flex items-center justify-center bg-red-50 hover:bg-red-100 text-red-600 rounded-lg transition-colors">
                                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                    d="M6 18L18 6M6 6l12 12" />
                                             </svg>
                                         </button>
                                     @endif
@@ -410,14 +426,17 @@
                                 <td class="text-left py-2">{{ $detail->product->name }}</td>
                                 <td class="text-center py-2">{{ $detail->quantity }}</td>
                                 <td class="text-right py-2">Rp
-                                    {{ number_format($detail->price_at_time * $detail->quantity, 0, ',', '.') }}</td>
+                                    {{ number_format($detail->price_at_time * $detail->quantity, 0, ',', '.') }}
+                                </td>
                             </tr>
                         @endforeach
                     </tbody>
                 </table>
                 @php
                     $subtotal = $reprintTransaction->details->sum(fn($d) => $d->price_at_time * $d->quantity);
-                    $tax = $reprintTransaction->total_amount - $subtotal;
+                    // Use stored tax data if available
+                    $storedTaxPercent = $reprintTransaction->tax_percentage ?? $taxPercentage;
+                    $storedTaxAmount = $reprintTransaction->tax_amount ?? ($reprintTransaction->total_amount - $subtotal);
                 @endphp
                 <div class="border-t border-dashed border-gray-300 pt-3 space-y-1">
                     <div class="flex justify-between text-sm">
@@ -425,8 +444,8 @@
                         <span>Rp {{ number_format($subtotal, 0, ',', '.') }}</span>
                     </div>
                     <div class="flex justify-between text-sm">
-                        <span>Pajak</span>
-                        <span>Rp {{ number_format($tax, 0, ',', '.') }}</span>
+                        <span>Pajak ({{ number_format($storedTaxPercent, 0) }}%)</span>
+                        <span>Rp {{ number_format($storedTaxAmount, 0, ',', '.') }}</span>
                     </div>
                     <div class="flex justify-between font-bold text-lg pt-2 border-t border-gray-200">
                         <span>Total</span>
@@ -450,7 +469,8 @@
                     </svg>
                 </div>
                 <h3 class="text-lg font-bold text-gray-800 mb-2">Hapus Transaksi?</h3>
-                <p class="text-gray-500 text-sm mb-6">Apakah Anda yakin ingin menghapus transaksi ini? Tindakan ini tidak dapat dibatalkan.</p>
+                <p class="text-gray-500 text-sm mb-6">Apakah Anda yakin ingin menghapus transaksi ini? Tindakan ini tidak
+                    dapat dibatalkan.</p>
                 <div class="flex gap-3">
                     <button wire:click="cancelDelete"
                         class="flex-1 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium rounded-xl transition-colors">
