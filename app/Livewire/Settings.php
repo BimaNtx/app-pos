@@ -4,7 +4,6 @@ namespace App\Livewire;
 
 use App\Models\Category;
 use App\Models\Expense;
-use App\Models\Logistic;
 use App\Models\Product;
 use App\Models\Transaction;
 use App\Models\TransactionDetail;
@@ -108,7 +107,6 @@ class Settings extends Component
         Product::truncate();
         Category::truncate();
         Expense::truncate();
-        Logistic::truncate();
 
         $this->enableForeignKeyChecks();
 
@@ -126,7 +124,6 @@ class Settings extends Component
                 'transactions' => Transaction::all()->toArray(),
                 'transaction_details' => TransactionDetail::all()->toArray(),
                 'expenses' => Expense::all()->toArray(),
-                'logistics' => Logistic::all()->toArray(),
             ]
         ];
 
@@ -163,7 +160,6 @@ class Settings extends Component
             Product::truncate();
             Category::truncate();
             Expense::truncate();
-            Logistic::truncate();
 
             // Restore data
             // Create mapping from old category IDs to new category IDs
@@ -281,11 +277,7 @@ class Settings extends Component
                 }
             }
 
-            if (!empty($backup['data']['logistics'])) {
-                foreach ($backup['data']['logistics'] as $item) {
-                    Logistic::create($item);
-                }
-            }
+
 
             $this->enableForeignKeyChecks();
 

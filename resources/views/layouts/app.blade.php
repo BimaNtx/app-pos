@@ -151,15 +151,7 @@
                             <span class="font-medium">Kategori</span>
                         </a>
 
-                        {{-- Logistics / Bahan --}}
-                        <a href="{{ route('logistics') }}"
-                            class="flex items-center gap-3 px-3 py-1.5 rounded-lg transition-all {{ request()->routeIs('logistics') ? 'bg-white/20 text-white' : 'text-teal-100 hover:bg-white/10 hover:text-white' }}">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
-                            </svg>
-                            <span class="font-medium">Logistics / Bahan</span>
-                        </a>
+
                     </div>
                 </div>
 
@@ -232,10 +224,10 @@
 
             {{-- User Section --}}
             <div class="p-2.5 border-t border-teal-600/50 flex-shrink-0">
-                <button type="button" 
-                    onclick="Livewire.dispatch('open-profile-modal')"
+                <button type="button" onclick="Livewire.dispatch('open-profile-modal')"
                     class="w-full flex items-center gap-3 px-2 py-1.5 text-teal-100 rounded-xl hover:bg-white/10 transition-colors cursor-pointer">
-                    <div class="w-9 h-9 bg-teal-500 rounded-full flex items-center justify-center text-white font-semibold flex-shrink-0">
+                    <div
+                        class="w-9 h-9 bg-teal-500 rounded-full flex items-center justify-center text-white font-semibold flex-shrink-0">
                         {{ substr(Auth::user()->name ?? 'A', 0, 1) }}
                     </div>
                     <div class="flex-1 min-w-0 text-left">

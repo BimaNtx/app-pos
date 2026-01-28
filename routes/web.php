@@ -6,7 +6,7 @@ use App\Livewire\Categories;
 use App\Livewire\Dashboard;
 use App\Livewire\Employees;
 use App\Livewire\Expenses;
-use App\Livewire\Logistics;
+
 use App\Livewire\PosPage;
 use App\Livewire\Products;
 use App\Livewire\Reports;
@@ -36,7 +36,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/transactions', Transactions::class)->name('transactions');
     Route::get('/reports', Reports::class)->name('reports');
     Route::get('/settings', Settings::class)->name('settings');
-    Route::get('/logistics', Logistics::class)->name('logistics');
+
     Route::get('/employees', Employees::class)->name('employees');
     Route::get('/expenses', Expenses::class)->name('expenses');
     Route::get('/reports/download-pdf/{period}', [ReportController::class, 'downloadPdf'])->name('reports.download-pdf');
