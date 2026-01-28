@@ -30,14 +30,15 @@ class ReportController extends Controller
             default => 'Hari Ini',
         };
 
-        // Get all transactions with details for the period
+        // Get all transactions with details for the period (EXCLUDE soft-deleted)
         $transactions = Transaction::with(['details.product'])
+            ->whereNull('deleted_at')
             ->whereBetween('created_at', [$start, $end])
             ->orderBy('created_at', 'desc')
             ->get();
 
         // Calculate totals
-        $totalSales = $transactions->sum('total_amount');
+        $totalSales = $transactions->sum('total_amount') ?? 0;
         $totalTransactions = $transactions->count();
         $averageOrder = $totalTransactions > 0 ? $totalSales / $totalTransactions : 0;
 
@@ -47,43 +48,46 @@ class ReportController extends Controller
             ->orderBy('date', 'desc')
             ->get();
 
-        $totalExpenses = $expenses->sum('amount');
+        $totalExpenses = $expenses->sum('amount') ?? 0;
         $netProfit = $totalSales - $totalExpenses;
 
-        // Top products
+        // Top products (EXCLUDE soft-deleted transactions, handle null products)
         $topProducts = TransactionDetail::query()
             ->join('transactions', 'transaction_details.transaction_id', '=', 'transactions.id')
-            ->join('products', 'transaction_details.product_id', '=', 'products.id')
+            ->leftJoin('products', 'transaction_details.product_id', '=', 'products.id')
             ->whereBetween('transactions.created_at', [$start, $end])
+            ->whereNull('transactions.deleted_at')
             ->select(
-                'products.name',
-                'products.category',
+                DB::raw("COALESCE(products.name, 'Produk Tidak Ditemukan') as name"),
+                DB::raw("COALESCE(products.category, 'Tanpa Kategori') as category"),
                 DB::raw('SUM(transaction_details.quantity) as total_qty'),
                 DB::raw('SUM(transaction_details.quantity * transaction_details.price_at_time) as total_revenue')
             )
-            ->groupBy('products.id', 'products.name', 'products.category')
+            ->groupBy('transaction_details.product_id', 'products.name', 'products.category')
             ->orderByDesc('total_qty')
             ->take(10)
             ->get();
 
-        // Sales by category
+        // Sales by category (EXCLUDE soft-deleted transactions, handle null categories)
         $salesByCategory = TransactionDetail::query()
             ->join('transactions', 'transaction_details.transaction_id', '=', 'transactions.id')
-            ->join('products', 'transaction_details.product_id', '=', 'products.id')
+            ->leftJoin('products', 'transaction_details.product_id', '=', 'products.id')
             ->whereBetween('transactions.created_at', [$start, $end])
+            ->whereNull('transactions.deleted_at')
             ->select(
-                'products.category',
+                DB::raw("COALESCE(products.category, 'Tanpa Kategori') as category"),
                 DB::raw('SUM(transaction_details.quantity * transaction_details.price_at_time) as total_revenue')
             )
-            ->groupBy('products.category')
+            ->groupBy(DB::raw("COALESCE(products.category, 'Tanpa Kategori')"))
+            ->orderByDesc('total_revenue')
             ->get();
 
-        // Expenses by category
+        // Expenses by category (handle null categories)
         $expensesByCategory = Expense::query()
             ->where('date', '>=', $start->toDateString())
             ->where('date', '<=', $end->toDateString())
             ->select(
-                'category',
+                DB::raw("COALESCE(category, 'Lainnya') as category"),
                 DB::raw('SUM(amount) as total_amount')
             )
             ->groupBy('category')
