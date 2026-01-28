@@ -16,6 +16,7 @@ class Transactions extends Component
 
     public string $search = '';
     public string $dateFilter = '';
+    public bool $showTrash = false;
 
     // Reprint state
     public ?int $reprintId = null;
@@ -43,6 +44,32 @@ class Transactions extends Component
     public function updatingDateFilter(): void
     {
         $this->resetPage();
+    }
+
+    public function updatingShowTrash(): void
+    {
+        $this->resetPage();
+    }
+
+    /**
+     * Toggle trash view
+     */
+    public function toggleTrash(): void
+    {
+        $this->showTrash = !$this->showTrash;
+        $this->resetPage();
+    }
+
+    /**
+     * Restore a soft-deleted transaction
+     */
+    public function restoreTransaction(int $id): void
+    {
+        $transaction = Transaction::onlyTrashed()->find($id);
+        if ($transaction) {
+            $transaction->restore();
+            session()->flash('message', 'Transaksi berhasil dipulihkan!');
+        }
     }
 
     public function reprint(int $id): void
@@ -224,13 +251,20 @@ class Transactions extends Component
             $this->taxPercentage = $settings['tax_percentage'] ?? 10;
         }
 
-        $transactions = Transaction::with('details.product')
-            ->when($this->search, function ($query) {
-                $query->where('transaction_code', 'like', '%' . $this->search . '%')
+        $query = Transaction::with('details.product');
+
+        // Apply trash filter
+        if ($this->showTrash) {
+            $query->onlyTrashed();
+        }
+
+        $transactions = $query
+            ->when($this->search, function ($q) {
+                $q->where('transaction_code', 'like', '%' . $this->search . '%')
                     ->orWhere('customer_name', 'like', '%' . $this->search . '%');
             })
-            ->when($this->dateFilter, function ($query) {
-                $query->whereDate('created_at', $this->dateFilter);
+            ->when($this->dateFilter, function ($q) {
+                $q->whereDate('created_at', $this->dateFilter);
             })
             ->latest()
             ->paginate(15);

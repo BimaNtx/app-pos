@@ -16,6 +16,15 @@
         {{-- Filters --}}
         <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 mb-6">
             <div class="flex flex-col sm:flex-row gap-4">
+                {{-- Trash Toggle --}}
+                <button wire:click="toggleTrash"
+                    class="px-4 py-2.5 rounded-xl font-medium transition-all flex items-center gap-2 {{ $showTrash ? 'bg-red-100 text-red-700 ring-2 ring-red-300' : 'bg-gray-100 hover:bg-gray-200 text-gray-600' }}">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                    </svg>
+                    {{ $showTrash ? 'Lihat Aktif' : 'Sampah' }}
+                </button>
                 {{-- Search --}}
                 <div class="relative flex-1">
                     <input type="text" wire:model.live.debounce.300ms="search"
@@ -37,6 +46,14 @@
                     </button>
                 @endif
             </div>
+            @if($showTrash)
+                <div class="mt-3 px-3 py-2 bg-red-50 border border-red-200 rounded-lg text-sm text-red-700">
+                    <svg class="w-4 h-4 inline-block mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    Menampilkan transaksi yang sudah dihapus. Klik "Pulihkan" untuk mengembalikan.
+                </div>
+            @endif
         </div>
 
         {{-- Transactions Table --}}
@@ -61,10 +78,15 @@
                     </thead>
                     <tbody class="divide-y divide-gray-100">
                         @forelse($transactions as $transaction)
-                            <tr wire:key="trx-{{ $transaction->id }}" class="hover:bg-gray-50 transition-colors">
+                            <tr wire:key="trx-{{ $transaction->id }}" class="hover:bg-gray-50 transition-colors {{ $showTrash ? 'bg-red-50/50' : '' }}">
                                 <td class="px-6 py-4 text-gray-500 text-sm">
                                     <div>{{ $transaction->created_at->format('d M Y') }}</div>
                                     <div class="text-xs">{{ $transaction->created_at->format('H:i') }}</div>
+                                    @if($showTrash)
+                                        <span class="inline-flex items-center px-2 py-0.5 mt-1 rounded text-xs font-medium bg-red-100 text-red-700">
+                                            Dihapus
+                                        </span>
+                                    @endif
                                 </td>
                                 <td class="px-6 py-4">
                                     <span
@@ -85,44 +107,57 @@
                                 </td>
                                 <td class="px-6 py-4">
                                     <div class="flex items-center justify-end gap-2">
-                                        {{-- View Detail --}}
-                                        <button wire:click="viewDetail({{ $transaction->id }})"
-                                            class="inline-flex items-center justify-center w-8 h-8 bg-blue-50 hover:bg-blue-100 text-blue-600 rounded-lg transition-colors"
-                                            title="Lihat Detail">
-                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                    d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                    d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                                            </svg>
-                                        </button>
-                                        {{-- Edit --}}
-                                        <button wire:click="editTransaction({{ $transaction->id }})"
-                                            class="inline-flex items-center justify-center w-8 h-8 bg-amber-50 hover:bg-amber-100 text-amber-600 rounded-lg transition-colors"
-                                            title="Edit">
-                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                    d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                                            </svg>
-                                        </button>
-                                        {{-- Delete --}}
-                                        <button wire:click="confirmDeleteTransaction({{ $transaction->id }})"
-                                            class="inline-flex items-center justify-center w-8 h-8 bg-red-50 hover:bg-red-100 text-red-600 rounded-lg transition-colors"
-                                            title="Hapus">
-                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                    d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                            </svg>
-                                        </button>
-                                        {{-- Reprint --}}
-                                        <button wire:click="reprint({{ $transaction->id }})"
-                                            class="inline-flex items-center justify-center w-8 h-8 bg-teal-50 hover:bg-teal-100 text-teal-600 rounded-lg transition-colors"
-                                            title="Cetak Ulang">
-                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                    d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
-                                            </svg>
-                                        </button>
+                                        @if($showTrash)
+                                            {{-- Restore Button (only in trash view) --}}
+                                            <button wire:click="restoreTransaction({{ $transaction->id }})"
+                                                class="inline-flex items-center justify-center px-3 py-2 bg-green-50 hover:bg-green-100 text-green-600 rounded-lg transition-colors gap-1"
+                                                title="Pulihkan">
+                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                        d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6" />
+                                                </svg>
+                                                <span class="text-sm font-medium">Pulihkan</span>
+                                            </button>
+                                        @else
+                                            {{-- View Detail --}}
+                                            <button wire:click="viewDetail({{ $transaction->id }})"
+                                                class="inline-flex items-center justify-center w-8 h-8 bg-blue-50 hover:bg-blue-100 text-blue-600 rounded-lg transition-colors"
+                                                title="Lihat Detail">
+                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                        d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                        d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                                </svg>
+                                            </button>
+                                            {{-- Edit --}}
+                                            <button wire:click="editTransaction({{ $transaction->id }})"
+                                                class="inline-flex items-center justify-center w-8 h-8 bg-amber-50 hover:bg-amber-100 text-amber-600 rounded-lg transition-colors"
+                                                title="Edit">
+                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                        d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                                </svg>
+                                            </button>
+                                            {{-- Delete --}}
+                                            <button wire:click="confirmDeleteTransaction({{ $transaction->id }})"
+                                                class="inline-flex items-center justify-center w-8 h-8 bg-red-50 hover:bg-red-100 text-red-600 rounded-lg transition-colors"
+                                                title="Hapus">
+                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                        d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                                </svg>
+                                            </button>
+                                            {{-- Reprint --}}
+                                            <button wire:click="reprint({{ $transaction->id }})"
+                                                class="inline-flex items-center justify-center w-8 h-8 bg-teal-50 hover:bg-teal-100 text-teal-600 rounded-lg transition-colors"
+                                                title="Cetak Ulang">
+                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                        d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
+                                                </svg>
+                                            </button>
+                                        @endif
                                     </div>
                                 </td>
                             </tr>
@@ -134,7 +169,7 @@
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
                                             d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
                                     </svg>
-                                    <p>Tidak ada transaksi ditemukan</p>
+                                    <p>{{ $showTrash ? 'Tidak ada transaksi di sampah' : 'Tidak ada transaksi ditemukan' }}</p>
                                 </td>
                             </tr>
                         @endforelse
