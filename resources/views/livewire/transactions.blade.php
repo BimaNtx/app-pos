@@ -1,7 +1,17 @@
 <div class="flex-1 overflow-y-auto" x-data x-on:reprint-receipt.window="setTimeout(() => window.print(), 300)">
     {{-- Flash Message --}}
     @if(session('message'))
-        <div class="fixed top-4 right-4 z-50 bg-green-500 text-white px-6 py-3 rounded-xl shadow-lg animate-pulse">
+        <div wire:key="flash-{{ now()->timestamp }}"
+             x-data="{ show: true }"
+             x-init="setTimeout(() => show = false, 3000)"
+             x-show="show"
+             x-transition:leave="transition ease-in duration-300"
+             x-transition:leave-start="opacity-100 translate-y-0"
+             x-transition:leave-end="opacity-0 -translate-y-2"
+             class="fixed top-4 right-4 z-50 bg-green-500 text-white px-6 py-3 rounded-xl shadow-lg flex items-center gap-3">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+            </svg>
             {{ session('message') }}
         </div>
     @endif

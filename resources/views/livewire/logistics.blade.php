@@ -26,8 +26,15 @@
 
     {{-- Flash Message --}}
     @if (session()->has('message'))
-        <div class="bg-green-100 border border-green-200 text-green-700 px-4 py-3 rounded-2xl flex items-center gap-3 shadow-sm"
-            role="alert">
+        <div wire:key="flash-{{ now()->timestamp }}"
+             x-data="{ show: true }"
+             x-init="setTimeout(() => show = false, 3000)"
+             x-show="show"
+             x-transition:leave="transition ease-in duration-300"
+             x-transition:leave-start="opacity-100 translate-y-0"
+             x-transition:leave-end="opacity-0 -translate-y-2"
+             class="bg-green-100 border border-green-200 text-green-700 px-4 py-3 rounded-2xl flex items-center gap-3 shadow-sm"
+             role="alert">
             <div class="bg-green-200 p-1.5 rounded-full">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
