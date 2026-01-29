@@ -183,12 +183,18 @@ class Transactions extends Component
             }
         }
 
-        // Recalculate total with tax from settings
+        // Recalculate subtotal, tax, and total
         $subtotal = $this->selectedTransaction->details()->get()->sum(function ($detail) {
             return $detail->quantity * $detail->price_at_time;
         });
+
+        // Use the tax_percentage stored in the transaction (at time of sale)
+        $taxPercentage = $this->selectedTransaction->tax_percentage ?? $this->taxPercentage;
+        $taxAmount = $subtotal * ($taxPercentage / 100);
+
         $this->selectedTransaction->update([
-            'total_amount' => $subtotal * (1 + $this->taxPercentage / 100),
+            'tax_amount' => $taxAmount,
+            'total_amount' => $subtotal + $taxAmount,
         ]);
 
         $this->closeModals();
