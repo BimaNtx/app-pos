@@ -30,7 +30,12 @@ class Expenses extends Component
 
     // Delete confirmation
     public bool $showDeleteModal = false;
+    public bool $showBatchDeleteModal = false;
     public ?int $deletingId = null;
+
+    // Batch selection
+    public array $selectedIds = [];
+    public bool $selectAll = false;
 
     protected function rules(): array
     {
@@ -45,11 +50,45 @@ class Expenses extends Component
     public function updatingSearch(): void
     {
         $this->resetPage();
+        $this->selectedIds = [];
+        $this->selectAll = false;
     }
 
     public function updatingCategoryFilter(): void
     {
         $this->resetPage();
+        $this->selectedIds = [];
+        $this->selectAll = false;
+    }
+
+    /**
+     * Handle select all checkbox
+     */
+    public function updatedSelectAll(): void
+    {
+        if ($this->selectAll) {
+            $query = Expense::query();
+
+            if ($this->search) {
+                $query->where('description', 'like', "%{$this->search}%");
+            }
+            if ($this->categoryFilter) {
+                $query->where('category', $this->categoryFilter);
+            }
+            if ($this->dateFrom) {
+                $query->whereDate('date', '>=', $this->dateFrom);
+            }
+            if ($this->dateTo) {
+                $query->whereDate('date', '<=', $this->dateTo);
+            }
+
+            $this->selectedIds = $query
+                ->pluck('id')
+                ->map(fn($id) => (string) $id)
+                ->toArray();
+        } else {
+            $this->selectedIds = [];
+        }
     }
 
     public function openModal(): void
@@ -112,6 +151,43 @@ class Expenses extends Component
     public function clearFilters(): void
     {
         $this->reset(['search', 'categoryFilter', 'dateFrom', 'dateTo']);
+        $this->selectedIds = [];
+        $this->selectAll = false;
+    }
+
+    /**
+     * Confirm batch delete
+     */
+    public function confirmBatchDelete(): void
+    {
+        if (count($this->selectedIds) > 0) {
+            $this->showBatchDeleteModal = true;
+        }
+    }
+
+    /**
+     * Batch delete expenses
+     */
+    public function batchDelete(): void
+    {
+        if (count($this->selectedIds) > 0) {
+            $count = count($this->selectedIds);
+            Expense::whereIn('id', $this->selectedIds)->delete();
+
+            session()->flash('message', $count . ' pengeluaran berhasil dihapus!');
+
+            $this->selectedIds = [];
+            $this->selectAll = false;
+        }
+        $this->showBatchDeleteModal = false;
+    }
+
+    /**
+     * Cancel batch delete
+     */
+    public function cancelBatchDelete(): void
+    {
+        $this->showBatchDeleteModal = false;
     }
 
     public function render()

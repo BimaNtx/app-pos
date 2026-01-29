@@ -2,13 +2,46 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Prunable;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Transaction extends Model
 {
-    use SoftDeletes;
+    use SoftDeletes, Prunable;
+
+    /**
+     * Number of days before soft-deleted transactions are permanently deleted.
+     */
+    public const PRUNE_AFTER_DAYS = 30;
+
+    /**
+     * Get the prunable model query.
+     * This will permanently delete soft-deleted transactions after 30 days.
+     */
+    public function prunable(): Builder
+    {
+        return static::onlyTrashed()
+            ->where('deleted_at', '<=', now()->subDays(self::PRUNE_AFTER_DAYS));
+    }
+
+    /**
+     * Get the number of days remaining before this transaction is permanently deleted.
+     * Returns null if the transaction is not soft-deleted.
+     */
+    public function getDaysUntilPermanentDeleteAttribute(): ?int
+    {
+        if (!$this->deleted_at) {
+            return null;
+        }
+
+        $deleteDate = $this->deleted_at->addDays(self::PRUNE_AFTER_DAYS);
+        $daysRemaining = (int) now()->diffInDays($deleteDate, false);
+
+        return max(0, $daysRemaining);
+    }
     /**
      * The attributes that are mass assignable.
      *

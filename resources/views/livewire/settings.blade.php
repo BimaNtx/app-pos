@@ -356,7 +356,6 @@
                         <li>Semua transaksi</li>
                         <li>Semua produk & kategori</li>
                         <li>Semua pengeluaran</li>
-                        <li>Semua data logistik</li>
                     </ul>
                     <p class="text-red-600 font-bold">Ketik "RESET" untuk mengkonfirmasi:</p>
                 `,

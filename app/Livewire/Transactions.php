@@ -27,28 +27,70 @@ class Transactions extends Component
     public bool $showEditModal = false;
     public bool $showDeleteModal = false;
     public ?int $deletingId = null;
+
+    // Restore Modal state
+    public bool $showRestoreModal = false;
+    public ?int $restoringId = null;
     public ?Transaction $selectedTransaction = null;
 
     // Edit form data
     public string $editCustomerName = '';
     public array $editItems = [];
 
+    // Batch selection
+    public array $selectedIds = [];
+    public bool $selectAll = false;
+    public bool $showBatchDeleteModal = false;
+    public bool $showBatchRestoreModal = false;
+
     // Tax Settings (loaded from settings.json)
     public float $taxPercentage = 10;
+
+    public function updatingShowTrash(): void
+    {
+        $this->resetPage();
+        $this->selectedIds = [];
+        $this->selectAll = false;
+    }
 
     public function updatingSearch(): void
     {
         $this->resetPage();
+        $this->selectedIds = [];
+        $this->selectAll = false;
     }
 
     public function updatingDateFilter(): void
     {
         $this->resetPage();
+        $this->selectedIds = [];
+        $this->selectAll = false;
     }
 
-    public function updatingShowTrash(): void
+    /**
+     * Handle select all checkbox
+     */
+    public function updatedSelectAll(): void
     {
-        $this->resetPage();
+        if ($this->selectAll) {
+            $query = Transaction::query();
+            if ($this->showTrash) {
+                $query->onlyTrashed();
+            }
+            $this->selectedIds = $query
+                ->when($this->search, function ($q) {
+                    $q->where('transaction_code', 'like', '%' . $this->search . '%')
+                        ->orWhere('customer_name', 'like', '%' . $this->search . '%');
+                })
+                ->when($this->dateFilter, function ($q) {
+                    $q->whereDate('created_at', $this->dateFilter);
+                })
+                ->pluck('id')
+                ->map(fn($id) => (string) $id)
+                ->toArray();
+        } else {
+            $this->selectedIds = [];
+        }
     }
 
     /**
@@ -58,18 +100,42 @@ class Transactions extends Component
     {
         $this->showTrash = !$this->showTrash;
         $this->resetPage();
+        $this->selectedIds = [];
+        $this->selectAll = false;
+    }
+
+    /**
+     * Confirm restore transaction
+     */
+    public function confirmRestoreTransaction(int $id): void
+    {
+        $this->restoringId = $id;
+        $this->showRestoreModal = true;
+    }
+
+    /**
+     * Cancel restore
+     */
+    public function cancelRestore(): void
+    {
+        $this->showRestoreModal = false;
+        $this->restoringId = null;
     }
 
     /**
      * Restore a soft-deleted transaction
      */
-    public function restoreTransaction(int $id): void
+    public function restoreTransaction(): void
     {
-        $transaction = Transaction::onlyTrashed()->find($id);
-        if ($transaction) {
-            $transaction->restore();
-            session()->flash('message', 'Transaksi berhasil dipulihkan!');
+        if ($this->restoringId) {
+            $transaction = Transaction::onlyTrashed()->find($this->restoringId);
+            if ($transaction) {
+                $transaction->restore();
+                session()->flash('message', 'Transaksi berhasil dipulihkan!');
+            }
         }
+        $this->showRestoreModal = false;
+        $this->restoringId = null;
     }
 
     public function reprint(int $id): void
@@ -246,6 +312,76 @@ class Transactions extends Component
         $this->selectedTransaction = null;
         $this->editCustomerName = '';
         $this->editItems = [];
+    }
+
+    /**
+     * Confirm batch delete
+     */
+    public function confirmBatchDelete(): void
+    {
+        if (count($this->selectedIds) > 0) {
+            $this->showBatchDeleteModal = true;
+        }
+    }
+
+    /**
+     * Batch delete transactions (soft delete)
+     */
+    public function batchDelete(): void
+    {
+        if (count($this->selectedIds) > 0) {
+            $count = count($this->selectedIds);
+            Transaction::whereIn('id', $this->selectedIds)->delete();
+
+            session()->flash('message', $count . ' transaksi berhasil dihapus!');
+
+            $this->selectedIds = [];
+            $this->selectAll = false;
+        }
+        $this->showBatchDeleteModal = false;
+    }
+
+    /**
+     * Cancel batch delete
+     */
+    public function cancelBatchDelete(): void
+    {
+        $this->showBatchDeleteModal = false;
+    }
+
+    /**
+     * Confirm batch restore
+     */
+    public function confirmBatchRestore(): void
+    {
+        if (count($this->selectedIds) > 0) {
+            $this->showBatchRestoreModal = true;
+        }
+    }
+
+    /**
+     * Batch restore transactions
+     */
+    public function batchRestore(): void
+    {
+        if (count($this->selectedIds) > 0) {
+            $count = count($this->selectedIds);
+            Transaction::onlyTrashed()->whereIn('id', $this->selectedIds)->restore();
+
+            session()->flash('message', $count . ' transaksi berhasil dipulihkan!');
+
+            $this->selectedIds = [];
+            $this->selectAll = false;
+        }
+        $this->showBatchRestoreModal = false;
+    }
+
+    /**
+     * Cancel batch restore
+     */
+    public function cancelBatchRestore(): void
+    {
+        $this->showBatchRestoreModal = false;
     }
 
     public function render()
