@@ -256,7 +256,7 @@
         <div class="header">
             <div class="header-content">
                 <h2>Selamat Datang,</h2>
-                <h1>Masuk!</h1>
+                <h1>Silahkan Login!</h1>
             </div>
         </div>
 
