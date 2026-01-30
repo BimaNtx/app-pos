@@ -41,12 +41,42 @@
             </div>
         </div>
 
+        {{-- Batch Action Bar --}}
+        @if(count($selectedIds) > 0)
+            <div class="bg-teal-50 border border-teal-200 rounded-xl p-4 mb-4 flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                    <span class="inline-flex items-center justify-center w-8 h-8 bg-teal-600 text-white rounded-full text-sm font-bold">
+                        {{ count($selectedIds) }}
+                    </span>
+                    <span class="text-teal-800 font-medium">Item Dipilih</span>
+                </div>
+                <div class="flex items-center gap-2">
+                    <button wire:click="$set('selectedIds', [])" wire:click="$set('selectAll', false)"
+                        class="px-4 py-2 bg-white hover:bg-gray-50 text-gray-600 font-medium rounded-xl border border-gray-200 transition-colors">
+                        Batal Pilih
+                    </button>
+                    <button wire:click="confirmBatchDelete"
+                        class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white font-medium rounded-xl transition-colors flex items-center gap-2">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                        </svg>
+                        Hapus Terpilih
+                    </button>
+                </div>
+            </div>
+        @endif
+
         {{-- Products Table --}}
         <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
             <div class="overflow-x-auto">
                 <table class="w-full">
                     <thead class="bg-gray-50">
                         <tr>
+                            <th class="px-4 py-3 w-12">
+                                <input type="checkbox" wire:model.live="selectAll"
+                                    class="w-4 h-4 text-teal-600 bg-gray-100 border-gray-300 rounded focus:ring-teal-500 focus:ring-2 cursor-pointer">
+                            </th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                 Produk</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -59,7 +89,11 @@
                     </thead>
                     <tbody class="divide-y divide-gray-100">
                         @forelse($products as $product)
-                            <tr wire:key="product-{{ $product->id }}" class="hover:bg-gray-50 transition-colors">
+                            <tr wire:key="product-{{ $product->id }}" class="hover:bg-gray-50 transition-colors {{ in_array((string)$product->id, $selectedIds) ? 'bg-teal-50' : '' }}">
+                                <td class="px-4 py-4">
+                                    <input type="checkbox" wire:model.live="selectedIds" value="{{ $product->id }}"
+                                        class="w-4 h-4 text-teal-600 bg-gray-100 border-gray-300 rounded focus:ring-teal-500 focus:ring-2 cursor-pointer">
+                                </td>
                                 <td class="px-6 py-4">
                                     <div class="flex items-center gap-3">
                                         @php
@@ -111,7 +145,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="4" class="px-6 py-12 text-center text-gray-400">
+                                <td colspan="5" class="px-6 py-12 text-center text-gray-400">
                                     <svg class="w-12 h-12 mx-auto mb-3" fill="none" stroke="currentColor"
                                         viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
@@ -299,6 +333,32 @@
             </div>
         </div>
     @endif
+
+    {{-- Batch Delete Confirmation Modal --}}
+    @if($showBatchDeleteModal)
+        <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50" wire:click.self="cancelBatchDelete">
+            <div class="bg-white rounded-2xl shadow-2xl w-full max-w-sm animate-bounce-in text-center p-6">
+                <div class="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <svg class="w-8 h-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                    </svg>
+                </div>
+                <h3 class="text-lg font-bold text-gray-800 mb-2">Hapus {{ count($selectedIds) }} Produk?</h3>
+                <p class="text-gray-500 text-sm mb-6">Semua produk yang dipilih akan dihapus. Tindakan ini tidak dapat dibatalkan.</p>
+                <div class="flex gap-3">
+                    <button wire:click="cancelBatchDelete"
+                        class="flex-1 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium rounded-xl transition-colors">
+                        Batal
+                    </button>
+                    <button wire:click="batchDelete"
+                        class="flex-1 py-2.5 bg-red-600 hover:bg-red-700 text-white font-medium rounded-xl transition-colors">
+                        Hapus Semua
+                    </button>
+                </div>
+            </div>
+        </div>
+    @endif
 </div>
 
 @push('scripts')
@@ -314,6 +374,8 @@
                     message = `Menu "${params.name}" telah diperbarui.`;
                 } else if (params.type === 'deleted') {
                     message = `Menu "${params.name}" telah dihapus.`;
+                } else if (params.type === 'batch-deleted') {
+                    message = `${params.count} menu telah dihapus.`;
                 }
 
                 Swal.fire({

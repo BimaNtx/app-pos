@@ -22,8 +22,13 @@ class Products extends Component
     // Modal state
     public bool $showModal = false;
     public bool $showDeleteModal = false;
+    public bool $showBatchDeleteModal = false;
     public ?int $editingId = null;
     public ?int $deletingId = null;
+
+    // Batch selection
+    public array $selectedIds = [];
+    public bool $selectAll = false;
 
     // Form fields
     #[Rule('required|min:2')]
@@ -46,11 +51,30 @@ class Products extends Component
     public function updatingSearch(): void
     {
         $this->resetPage();
+        $this->selectedIds = [];
+        $this->selectAll = false;
     }
 
     public function updatingCategoryFilter(): void
     {
         $this->resetPage();
+        $this->selectedIds = [];
+        $this->selectAll = false;
+    }
+
+    // Reset selections when page changes
+    public function updatedSelectAll(): void
+    {
+        if ($this->selectAll) {
+            $this->selectedIds = Product::query()
+                ->when($this->search, fn($q) => $q->where('name', 'like', '%' . $this->search . '%'))
+                ->when($this->categoryFilter !== 'all', fn($q) => $q->where('category', $this->categoryFilter))
+                ->pluck('id')
+                ->map(fn($id) => (string) $id)
+                ->toArray();
+        } else {
+            $this->selectedIds = [];
+        }
     }
 
     public function openModal(?int $id = null): void
@@ -164,10 +188,10 @@ class Products extends Component
             // Capture product name before deleting
             $product = Product::find($this->deletingId);
             $productName = $product?->name ?? '';
-            
+
             // Delete the product
             Product::destroy($this->deletingId);
-            
+
             // Dispatch event for category count refresh and notification
             $this->dispatch('product-saved', [
                 'type' => 'deleted',
@@ -182,6 +206,36 @@ class Products extends Component
     {
         $this->showDeleteModal = false;
         $this->deletingId = null;
+    }
+
+    // Batch delete methods
+    public function confirmBatchDelete(): void
+    {
+        if (count($this->selectedIds) > 0) {
+            $this->showBatchDeleteModal = true;
+        }
+    }
+
+    public function batchDelete(): void
+    {
+        if (count($this->selectedIds) > 0) {
+            $count = count($this->selectedIds);
+            Product::whereIn('id', $this->selectedIds)->delete();
+
+            $this->dispatch('product-saved', [
+                'type' => 'batch-deleted',
+                'count' => $count,
+            ]);
+
+            $this->selectedIds = [];
+            $this->selectAll = false;
+        }
+        $this->showBatchDeleteModal = false;
+    }
+
+    public function cancelBatchDelete(): void
+    {
+        $this->showBatchDeleteModal = false;
     }
 
     public function render()
