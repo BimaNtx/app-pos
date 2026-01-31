@@ -317,13 +317,20 @@
                         $subtotal = $selectedTransaction->details->sum(fn($d) => $d->price_at_time * $d->quantity);
                         // Use stored tax amount if available, otherwise calculate from total
                         $storedTaxPercent = $selectedTransaction->tax_percentage ?? $taxPercentage;
-                        $storedTaxAmount = $selectedTransaction->tax_amount ?? ($selectedTransaction->total_amount - $subtotal);
+                        $storedDiscountAmount = $selectedTransaction->discount_amount ?? 0;
+                        $storedTaxAmount = $selectedTransaction->tax_amount ?? ($selectedTransaction->total_amount - ($subtotal - $storedDiscountAmount));
                     @endphp
                     <div class="border-t border-gray-100 pt-4 mt-4 space-y-2">
                         <div class="flex justify-between text-sm">
                             <span class="text-gray-500">Subtotal</span>
                             <span class="text-gray-700">Rp {{ number_format($subtotal, 0, ',', '.') }}</span>
                         </div>
+                        @if($storedDiscountAmount > 0)
+                            <div class="flex justify-between text-sm text-red-600">
+                                <span>Diskon</span>
+                                <span>- Rp {{ number_format($storedDiscountAmount, 0, ',', '.') }}</span>
+                            </div>
+                        @endif
                         <div class="flex justify-between text-sm">
                             <span class="text-gray-500">Pajak ({{ number_format($storedTaxPercent, 0) }}%)</span>
                             <span class="text-gray-700">Rp {{ number_format($storedTaxAmount, 0, ',', '.') }}</span>
@@ -432,14 +439,20 @@
                     {{-- Total Preview --}}
                     @php
                         $editSubtotal = collect($editItems)->sum(fn($item) => $item['quantity'] * $item['price_at_time']);
-                        $editTax = $editSubtotal * ($taxPercentage / 100);
-                        $editTotal = $editSubtotal + $editTax;
+                        $editTax = $this->editTotal - ($editSubtotal - $this->editDiscountAmount);
+                        $editTotal = $this->editTotal;
                     @endphp
                     <div class="border-t border-gray-100 pt-4 mt-4 space-y-2">
                         <div class="flex justify-between text-sm">
                             <span class="text-gray-500">Subtotal</span>
                             <span class="text-gray-700">Rp {{ number_format($editSubtotal, 0, ',', '.') }}</span>
                         </div>
+                        @if($this->editDiscountAmount > 0)
+                            <div class="flex justify-between text-sm text-red-600">
+                                <span>Diskon</span>
+                                <span>- Rp {{ number_format($this->editDiscountAmount, 0, ',', '.') }}</span>
+                            </div>
+                        @endif
                         <div class="flex justify-between text-sm">
                             <span class="text-gray-500">Pajak ({{ $taxPercentage }}%)</span>
                             <span class="text-gray-700">Rp {{ number_format($editTax, 0, ',', '.') }}</span>
@@ -505,13 +518,20 @@
                     $subtotal = $reprintTransaction->details->sum(fn($d) => $d->price_at_time * $d->quantity);
                     // Use stored tax data if available
                     $storedTaxPercent = $reprintTransaction->tax_percentage ?? $taxPercentage;
-                    $storedTaxAmount = $reprintTransaction->tax_amount ?? ($reprintTransaction->total_amount - $subtotal);
+                    $storedDiscountAmount = $reprintTransaction->discount_amount ?? 0;
+                    $storedTaxAmount = $reprintTransaction->tax_amount ?? ($reprintTransaction->total_amount - ($subtotal - $storedDiscountAmount));
                 @endphp
                 <div class="border-t border-dashed border-gray-300 pt-3 space-y-1">
                     <div class="flex justify-between text-sm">
                         <span>Subtotal</span>
                         <span>Rp {{ number_format($subtotal, 0, ',', '.') }}</span>
                     </div>
+                    @if($storedDiscountAmount > 0)
+                        <div class="flex justify-between text-sm">
+                            <span>Diskon</span>
+                            <span>- Rp {{ number_format($storedDiscountAmount, 0, ',', '.') }}</span>
+                        </div>
+                    @endif
                     <div class="flex justify-between text-sm">
                         <span>Pajak ({{ number_format($storedTaxPercent, 0) }}%)</span>
                         <span>Rp {{ number_format($storedTaxAmount, 0, ',', '.') }}</span>

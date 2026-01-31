@@ -46,6 +46,11 @@ class Transactions extends Component
     // Tax Settings (loaded from settings.json)
     public float $taxPercentage = 10;
 
+    // Discount Settings
+    public int $discountMinItems = 1;
+    public float $discountMinTotal = 0;
+    public string $discountConditionMode = 'total';
+
     public function updatingShowTrash(): void
     {
         $this->resetPage();
@@ -181,6 +186,18 @@ class Transactions extends Component
                     'price_at_time' => $detail->price_at_time,
                 ];
             })->toArray();
+
+            // Load discount settings
+            $settingsPath = storage_path('app/settings.json');
+            if (File::exists($settingsPath)) {
+                $settings = json_decode(File::get($settingsPath), true);
+                if ($settings['discount_enabled'] ?? true) {
+                    $this->discountMinItems = $settings['discount_min_items'] ?? 1;
+                    $this->discountMinTotal = $settings['discount_min_total'] ?? 0;
+                    $this->discountConditionMode = $settings['discount_condition_mode'] ?? 'total';
+                }
+            }
+
             $this->showEditModal = true;
         }
     }
@@ -214,8 +231,61 @@ class Transactions extends Component
         $subtotal = collect($this->editItems)->sum(function ($item) {
             return $item['quantity'] * $item['price_at_time'];
         });
-        // Apply tax percentage from settings
-        return $subtotal * (1 + $this->taxPercentage / 100);
+
+        // Calculate discount
+        $discountAmount = $this->calculateEditDiscount($subtotal, collect($this->editItems)->sum('quantity'));
+
+        // Apply tax percentage from settings (or original transaction tax percentage if preferred, 
+        // but typically tax tracks current settings or transaction snapshot. sticking to current logic of settings tax)
+        // Actually, updateTransaction uses selectedTransaction->tax_percentage ?? $this->taxPercentage. 
+        // Let's use the transaction's tax percentage if available for consistency.
+        $taxPercentage = $this->selectedTransaction->tax_percentage ?? $this->taxPercentage;
+        
+        $taxAmount = ($subtotal - $discountAmount) * ($taxPercentage / 100);
+
+        return ($subtotal - $discountAmount) + $taxAmount;
+    }
+
+    public function getEditDiscountAmountProperty(): float
+    {
+        $subtotal = collect($this->editItems)->sum(function ($item) {
+            return $item['quantity'] * $item['price_at_time'];
+        });
+        return $this->calculateEditDiscount($subtotal, collect($this->editItems)->sum('quantity'));
+    }
+
+    private function calculateEditDiscount(float $subtotal, int $totalQty): float
+    {
+        // 1. Check conditions
+        if ($this->discountConditionMode === 'quantity') {
+            if ($totalQty < $this->discountMinItems) {
+                return 0;
+            }
+        } else {
+            if ($subtotal < $this->discountMinTotal) {
+                return 0;
+            }
+        }
+
+        // 2. Calculate based on transaction's original discount value/type
+        // If the transaction didn't have a discount type/value initially, we probably shouldn't invent one unless we fetch default settings?
+        // However, usually "Edit" means re-evaluating the SAME discount rules on modified items.
+        // If the original transaction had NO discount type, maybe we assume it was 0?
+        // Or should we use the settings default discount? 
+        // The user request says "kita sudah set diskon... saat edit... diskon error". 
+        // This implies preserving the discount RULE (percentage/value) but re-checking conditions.
+        
+        $discountValue = $this->selectedTransaction->discount_value ?? 0;
+        $discountType = $this->selectedTransaction->discount_type ?? 'percentage';
+
+        if ($discountValue <= 0) return 0;
+
+        if ($discountType === 'percentage') {
+            $percentage = min(100, $discountValue);
+            return $subtotal * ($percentage / 100);
+        } else {
+            return min($discountValue, $subtotal);
+        }
     }
 
     /**
@@ -250,17 +320,24 @@ class Transactions extends Component
         }
 
         // Recalculate subtotal, tax, and total
+        // Recalculate subtotal, tax, and total
         $subtotal = $this->selectedTransaction->details()->get()->sum(function ($detail) {
             return $detail->quantity * $detail->price_at_time;
         });
 
+        $totalQty = $this->selectedTransaction->details()->get()->sum('quantity');
+        $discountAmount = $this->calculateEditDiscount($subtotal, $totalQty);
+
         // Use the tax_percentage stored in the transaction (at time of sale)
         $taxPercentage = $this->selectedTransaction->tax_percentage ?? $this->taxPercentage;
-        $taxAmount = $subtotal * ($taxPercentage / 100);
+        // Tax is usually applied after discount
+        $taxableAmount = max(0, $subtotal - $discountAmount);
+        $taxAmount = $taxableAmount * ($taxPercentage / 100);
 
         $this->selectedTransaction->update([
+            'discount_amount' => $discountAmount, // Update discount amount
             'tax_amount' => $taxAmount,
-            'total_amount' => $subtotal + $taxAmount,
+            'total_amount' => $subtotal - $discountAmount + $taxAmount,
         ]);
 
         $this->closeModals();
