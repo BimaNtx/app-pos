@@ -42,6 +42,7 @@ class Dashboard extends Component
             ->join('transactions', 'transaction_details.transaction_id', '=', 'transactions.id')
             ->join('products', 'transaction_details.product_id', '=', 'products.id')
             ->whereDate('transactions.created_at', today())
+            ->whereNull('transactions.deleted_at')
             ->select('products.name', DB::raw('SUM(transaction_details.quantity) as total_qty'))
             ->groupBy('products.id', 'products.name')
             ->orderByDesc('total_qty')
