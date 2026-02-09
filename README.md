@@ -267,8 +267,6 @@ Jika Anda telah membuat user admin:
 
 ## 📸 Screenshots
 
-> *Tambahkan screenshots aplikasi di sini*
-
 | Dashboard | POS Page |
 |-----------|----------|
 | ![Dashboard](screenshots/Dashboard.png) | ![POS](screenshots/POS.png) |
